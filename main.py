@@ -14,8 +14,8 @@ import random
 from sqlalchemy import desc
 from sqlalchemy import or_
 import smtplib
-from flask_socketio import SocketIO, emit, join_room, leave_room
-
+import os
+from sqlalchemy.sql.expression import func
 
 current_year = datetime.datetime.now().year
 app = Flask(__name__)
@@ -23,7 +23,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = "your_secret_key_here"
 db = SQLAlchemy(app)
-socketio = SocketIO(app)
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = '/login'
@@ -131,6 +131,23 @@ def checkdue_date(allcollaboration ):
         if collabration.due_date > datetime.date.today().strftime("%B %d, %Y"):
             db.session.delete(collabration)
             db.sesion.commit()
+
+
+
+@app.route("/", methods=["GET", "POST"])
+def home():
+
+    random_user = User.query.order_by(func.random()).limit(5).all()
+    # if random_user.id == current_user.id:
+    #     random_user = User.query.order_by(func.random()).limit(5)
+    user = User.query.filter_by(id=current_user.id).first()
+    collabs = Collabration.query.order_by(Collabration.id.desc()).limit(5)
+    blog = Blog.query.order_by(Blog.id.desc()).limit(5)
+
+    is_logged_in = current_user.is_authenticated
+    return render_template("index.html", is_logged_in=is_logged_in, user=user, collabs=collabs,blogs=blog, random_users=random_user)
+
+
 
 
 
@@ -303,13 +320,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-@app.route("/", methods=["GET", "POST"])
-def home():
-    user = ""
-    if current_user.is_authenticated:
-        user = User.query.filter_by(id=current_user.id).first()
-    is_logged_in = current_user.is_authenticated
-    return render_template("index.html", is_logged_in=is_logged_in, user=user)
+
 
 
 
@@ -358,6 +369,12 @@ def signup():
         status = bleach.clean(request.form['status'])
         phone_number = bleach.clean(request.form['phone_number'])
         about_me = bleach.clean(request.form["about_me"])
+        image = request.files['image']
+
+        destination_folder = os.path.join('static', 'images')
+
+        image_path = os.path.join(app.root_path, destination_folder, image.filename)
+        image.save(image_path)
         if confirm_password != password:
             flash("yout confirmation password does not match the password")
             return redirect(url_for('signup'))
@@ -392,7 +409,8 @@ def signup():
             country=country,
             City=city,
             about_me=about_me,
-            password=hash_and_salted_password
+            profile_photo=image_path,
+             password=hash_and_salted_password
         )
 
         db.session.add(new_user)
@@ -495,9 +513,8 @@ def deleteblog(id):
 def editprofile():
     if request.method == "POST":
 
-            user = User.query.filter_by(id=current_user.id)
+            user = User.query.filter_by(id=current_user.id).first()
             email = bleach.clean(request.form['email'])
-
             first_name = bleach.clean(request.form['first_name'])
             last_name = bleach.clean(request.form['last_name'])
             twitter = bleach.clean(request.form['twitter'])
@@ -507,6 +524,18 @@ def editprofile():
             usersage = bleach.clean(request.form['age'])
             skills = bleach.clean(request.form['skills'])
             status = bleach.clean(request.form['status'])
+
+
+            if 'image' in request.files and request.files['image'].filename != '':
+                image = request.files['image']
+                ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+                if image.filename.split('.')[-1].lower() in ALLOWED_EXTENSIONS:
+                    destination_folder = os.path.join('static', 'images')
+
+                    image_path = os.path.join(app.root_path, destination_folder, image.filename)
+                    image.save(image_path)
+
+
             user.email = email
             user.first_name = first_name
             user.twitter = twitter
@@ -516,6 +545,7 @@ def editprofile():
             user.age = usersage
             user.skills = skills
             user.status = status
+            user.profile_photo = image_path
             db.session.commit()
             return redirect(url_for('myprofile'))
 

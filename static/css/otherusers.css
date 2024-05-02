@@ -10,7 +10,7 @@
     .masthead {
       position: relative;
       height: 60vh;
-      background-image: url(../static/images/dog-img.jpg);
+
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;

@@ -51,18 +51,18 @@
         </li>
       </ul>
 
-      
+
     </div>
   </div>
 </nav>
-<button class="btn btn-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+<button class="btn btn-dark" style="position: fixed; margin-top:10px;" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
   <i class="fa-solid fa-bars"></i>
 </button>
 
 <!-- Offcanvas -->
 <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
   <div class="offcanvas-header">
-    <img src="../static/images/dog-img.jpg" style=" width: 50px; /* Set the desired width */
+    <img src="../{{ user.profile_photo }}" style=" width: 50px; /* Set the desired width */
             height: 45px; /* Set the desired height */
             border-radius: 100%; /* Makes the image circular */
             object-fit: cover; padding-right: 10px;">
@@ -72,9 +72,7 @@
   </div>
 
     <div class="offcanvas-body">
- <div>
-          Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
-        </div>
+
 
       <div class="btn-group dropend">
         <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -92,9 +90,7 @@
       </div>
     </div>
       <div class="offcanvas-body">
-        <div>
-          Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
-        </div>
+
 
         <div class="btn-group dropend">
           <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -111,9 +107,6 @@
         </div>
       </div>
       <div class="offcanvas-body">
-        <div>
-          Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
-        </div>
 
         <div class="btn-group dropend">
           <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -131,9 +124,7 @@
 
       </div>
   <div class="offcanvas-body">
-    <div>
-      Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
-    </div>
+
 
     <div class="btn-group dropend">
       <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -149,6 +140,57 @@
     </div>
 </div>
 
+    <div class="hero-content">
+        <h2 style="margin-left: 0%;;">Welcome to SEcollab</h2>
+        <p>A platform for software engineers to collaborate, write blogs, and connect with others.</p>
+    </div>
+
+
+</section>
+<div class="container">
+    <section id="blogs" class="blogs">
+        <h2>Latest Blogs</h2>
+        {% for blog in blogs %}
+        <a href="{{ url_for('Specficblog', id=blog.id) }}">
+            <div class="blog-post">
+                <h3>{{ blog.title }}</h3>
+                <p>Written by: {{ blog.author.fname }} {{ blog.author.lname }}</p>
+                <p>Date: {{ blog.date }}</p>
+                <p>{{ blog.subtitle }}</p>
+            </div>
+        </a>
+        {% endfor %}
+    </section>
+
+    <section id="projects" class="projects">
+        <h2>Recent Projects</h2>
+        {% for collab in collabs %}
+        <a href="{{ url_for('specficcollabration', id=collab.id) }}">
+        <div class="project">
+            <h3>{{ collab.name }}</h3>
+            <p>Created by: {{ collab.user.fname }} {{ collab.user.lname }}</p>
+            <p>Description: {{ collab.description }}</p>
+            <p>Status: Open for Collaboration</p>
+        </div>
+            </a>
+        {% endfor %}
+    </section>
+
+    <section id="users" class="users">
+        <h2>Featured Users</h2>
+
+        {% for random_user in random_users %}
+        <a href="{{ url_for('profile', id=random_user.id) }}">
+        <div class="user">
+            <img src="user.jpg" alt="User Image">
+            <h3>{{ random_user.fname }} {{ random_user.lname }}</h3>
+            <p>Bio: {{ random_user.about_me }}</p>
+            <button user-id={{ random_user.id }} class="follow">Follow</button>
+        </div>
+            </a>
+        {% endfor %}
+    </section>
+</div>
 
 {% else %}
 <nav class="navbar navbar-expand-lg bg-body" data-bs-theme="dark">
@@ -201,6 +243,45 @@
 
 
 
+    <script>
+
+
+
+var followButtons = document.querySelectorAll(".follow"); // Select all buttons with class "btn" and "btn-primary"
+
+followButtons.forEach(function(button) {
+  var user_id = button.getAttribute("user-id");
+  button.addEventListener("click", function() {
+    fetch("http://127.0.0.1:5000/follow/" + user_id, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then(function(response) {
+        if (response.ok) {
+          button.textContent = "Followed";
+          return response.json();
+        } else {
+          throw new Error("Error: " + response.status);
+        }
+      })
+      .then(function(data) {
+        if (data && data.message) {
+          console.log(data.message);
+           button.textContent = "Followed";
+        } else {
+          throw new Error("Invalid response data");
+        }
+      })
+      .catch(function(error) {
+        console.error(error);
+      });
+  });
+});
+
+</script>
+</script>
 <script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js')}}"></script>
   <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
