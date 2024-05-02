@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Following Page</title>
+    <link rel="stylesheet" href="../static/css/myfollowing.css">
+</head>
+<body>
+    <div class="container">
+        <h1>{{user.fname }} Follows</h1>
+        <div class="followers">
+            {% for f in allfollowing %}
+            <div class="follower">
+                <p>{{ f.follower.fname }} {{ f.follower.lname }}</p>
+
+
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+<script src="../static/js/myfollowing.js"></script>
+</body>
+</html>

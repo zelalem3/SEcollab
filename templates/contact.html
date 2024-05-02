@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Contact Us</title>
+  <link rel="icon" href="../static/images/newohana.PNG" type="image/png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="../static/css/contact.css">
+  <script src="https://kit.fontawesome.com/3259a3ed9a.js" crossorigin="anonymous"></script>
+  <link href="https://your-font-service.com/fonts/css/style.css" rel="stylesheet">
+
+  <style>
+
+  </style>
+</head>
+<body>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="alert alert-info flash-message-container shadow-lg rounded" role="alert">
+      <ul class="list-unstyled flash-message-list">
+        {% for message in messages %}
+          <li class="flash-message-item">message </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% endwith %}
+<div class="col-lg-12">
+          <div class="card mt-4 border-0 mb-4">
+            <div class="row">
+              <div class="col-lg-4 col-md-4">
+                <div class="card-body d-flex align-items-center c-detail pl-0">
+                  <div class="mr-3 align-self-center">
+                    <img src="https://www.wrappixel.com/demos/ui-kit/wrapkit/assets/images/contact/icon1.png">
+                  </div>
+                  <div class="">
+                    <h6 class="font-weight-medium">Address</h6>
+                    <p class="">601 Sherwood Ave.
+                      <br> San Bernandino</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-4 col-md-4">
+                <div class="card-body d-flex align-items-center c-detail">
+                  <div class="mr-3 align-self-center">
+                    <img src="https://www.wrappixel.com/demos/ui-kit/wrapkit/assets/images/contact/icon2.png">
+                  </div>
+                  <div class="">
+                    <h6 class="font-weight-medium">Phone</h6>
+                    <a href="tel:+1234567890" class="phone-link" style="display:block;">Click to Call: +1 234-567-890</a>
+                    <a href="tel:+1234567890" class="phone-link">Click to Call: +1 234-567-890</a>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-4 col-md-4">
+                <div class="card-body d-flex align-items-center c-detail">
+                  <div class="mr-3 align-self-center">
+                    <img src="https://www.wrappixel.com/demos/ui-kit/wrapkit/assets/images/contact/icon3.png">
+                  </div>
+                  <div class="">
+                    <h6 class="font-weight-medium">Email</h6>
+                    <p class="">
+                      info@wrappixel.com
+                      <br> 123@wrappixel.com
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<div class="contact3 py-5">
+  <div class="row no-gutters">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="card-shadow">
+            <img src="https://www.wrappixel.com/demos/ui-kit/wrapkit/assets/images/contact/2.jpg" class="img-fluid">
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="contact-box ml-3">
+            <h1 class="font-weight-light mt-2">Quick Contact</h1>
+            <form class="mt-4" method="post" action="/contact">
+              <div class="row">
+                <div class="col-lg-12">
+                  <div class="form-group mt-2">
+                    <input class="form-control" type="text" placeholder="name"  name="name" required>
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <div class="form-group mt-2">
+                    <input class="form-control" type="email" placeholder="email address" name="email" required>
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <div class="form-group mt-2">
+                    <input class="form-control" type="text" placeholder="phone" name="phone" required>
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <div class="form-group mt-2">
+                    <textarea class="form-control" rows="3" placeholder="message" name="message" required></textarea>
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <button type="submit" class="btn btn-danger-gradiant mt-3 border-0 px-3 py-2"><span> SUBMIT</span></button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+</div>
+      <a href="https://www.tiktok.com/ohana" style="position: fixed; top: 30%; right: 20px;"><img src="../static/images/tittok.png" style="width: 40px; height: 40px;border-radius: 50%;" alt="Twitter"></a>
+
+       <a href="https://www.instagram.com/ohana" style="position: fixed; top: 39%; right: 20px;"><img src="../static/images/instagram.jpg" style="width: 40px; height: 40px;border-radius: 50%;" alt="Instagram"></a>
+  <a href="https://www.linkedin.com/ohana" style="position: fixed; top: 47%; right: 20px;"><img src="../static/images/facebook.png" style="width: 40px; height: 40px;" alt="LinkedIn"></a>
+ <a href="https://www.linkedin.com/ohana" style="position: fixed; top: 55%; right: 20px;"><img src="../static/images/youtube.png" style="width: 40px; height: 40px; border-radius: 50%;" alt="LinkedIn"></a>
+
+
+  <!-- Optional JavaScript dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>

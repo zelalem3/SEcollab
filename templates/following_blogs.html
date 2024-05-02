@@ -1,0 +1,37 @@
+<link rel="stylesheet" href="../static/css/allblog.css">
+{% include "header.html" %}
+{% include "navigation.html" %}
+<div class="container">
+    <div class="card-columns">
+      {% for blog in blogs %}
+      <div class="card mb-4">
+        <img src="../static/images/dog-img.jpg" class="card-img-top" alt="Blog Image">
+        <div class="card-body">
+          <h5 class="card-title">{{ blog.title }}</h5>
+          <p class="card-text">{{ blog.subtitle }}</p>
+          <a href="{{ url_for('Specficblog', id=blog.id) }}"><button type="button" class="btn btn-primary">Read</button></a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <hr>
+
+
+
+<nav class="my-4" aria-label="...">
+  <ul class="pagination justify-content-center">
+    <li class="page-item">
+      <a class="page-link" href="#" tabindex="-1" aria-disabled="true">&laquo;</a>
+    </li>
+    <li class="page-item"><a class="page-link" href="#">1</a></li>
+    <li class="page-item active" aria-current="page">
+      <a class="page-link" href="#">2 <span class="visually-hidden">(current)</span></a>
+    </li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item">
+      <a class="page-link" href="#">&raquo;</a>
+    </li>
+  </ul>
+</nav>
+{% include "footer.html" %}

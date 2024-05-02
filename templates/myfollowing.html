@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Following Page</title>
+    <link rel="stylesheet" href="../static/css/myfollowing.css">
+</head>
+<body>
+    <div class="container">
+        <h1>People You Follow</h1>
+        <div class="followers">
+            {% for f in allfollowing %}
+            <div class="follower">
+                <p>{{ f.follower.fname }} {{ f.follower.lname }}</p>
+                <!-- Use class instead of id -->
+                <button class="unfollow-btn" follower-id="{{ f.follower_id }}">Unfollow</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+<script src="../static/js/myfollowing.js"></script>
+</body>
+</html>
