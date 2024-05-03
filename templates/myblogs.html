@@ -78,9 +78,9 @@
     <div class="card-columns">
       {% for blog in blogs %}
       {% if blog is defined%}
-      <div class="card mb-4">
+      <div class="parent">
         <img src="../static/images/dog-img.jpg" class="card-img-top" alt="Blog Image">
-        <div class="card-body">
+        <div class="child">
           <h5 class="card-title">{{ blog.title }}</h5>
           <p class="card-text">{{ blog.subtitle }}</p>
           <a href="{{ url_for('Specficblog', id=blog.id) }}"><button type="button" class="btn btn-primary">Read</button></a>

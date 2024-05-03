@@ -182,12 +182,13 @@
         {% for random_user in random_users %}
         <a href="{{ url_for('profile', id=random_user.id) }}">
         <div class="user">
-            <img src="user.jpg" alt="User Image">
+            <img src="../{{ random_user.profile_photo }}" alt="User Image">
             <h3>{{ random_user.fname }} {{ random_user.lname }}</h3>
             <p>Bio: {{ random_user.about_me }}</p>
+            </a>
             <button user-id={{ random_user.id }} class="follow">Follow</button>
         </div>
-            </a>
+
         {% endfor %}
     </section>
 </div>
@@ -247,7 +248,7 @@
 
 
 
-var followButtons = document.querySelectorAll(".follow"); // Select all buttons with class "btn" and "btn-primary"
+var followButtons = document.querySelectorAll(".follow");
 
 followButtons.forEach(function(button) {
   var user_id = button.getAttribute("user-id");

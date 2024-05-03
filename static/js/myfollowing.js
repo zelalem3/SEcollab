@@ -1,8 +1,8 @@
 document.querySelectorAll(".unfollow-btn").forEach(button => {
     button.addEventListener("click", function() {
-        let user_id = this.getAttribute("follower-id");  // Get the user_id from the clicked button
+        let user_id = button.getAttribute("follower-id");
 
-        fetch("http://127.0.0.1:5000/unfollow/" + user_id, {  // Assuming your server is configured to handle this path
+        fetch("http://127.0.0.1:5000/unfollow/" + user_id, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -10,7 +10,7 @@ document.querySelectorAll(".unfollow-btn").forEach(button => {
         })
         .then(response => {
             if (response.ok) {
-                this.textContent = "Follow";  // Change the text of this specific button
+                button.textContent = "Follow";
                 return response.json();
             } else {
                 throw new Error("Network response was not ok.");
@@ -19,6 +19,7 @@ document.querySelectorAll(".unfollow-btn").forEach(button => {
         .then(data => {
             if (data && data.message) {
                 console.log(data.message);
+                button.textContent = "Follow";
             } else {
                 throw new Error("Invalid response data");
             }

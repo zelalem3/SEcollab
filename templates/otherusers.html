@@ -80,13 +80,15 @@
     <div class="parent">
       {% if users %}
       {% for user in users %}
+      <a href="{{ url_for('profile', id= user.id ) }}" style="text-decoration: none;">
       <div class="child">
         <img src="../static/images/noprofile.jpg" class="card-img-top" alt="Blog Image">
         <div class="card-body">
           <h5 class="card-title">{{ user.fname }} {{ user.lname }}</h5>
-
+        </a>
           <button type="button" user-id="{{ user.id }}" id="{{ user.id }}" class="btn btn-primary">Follow</button>
         </div>
+
       </div>
       {% endfor %}
   {% endif %}
