@@ -111,14 +111,27 @@
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
-       animation: scroll 1s ease-in-out;/* Adjust the gap between child divs */
+       animation: scroll 1s ease-in-out;
     }
 
     .child {
-      width: calc(33% - 40px); /* 25% width for each child div with 10px gap */
+      width: calc(33% - 40px);
 
       padding: 20px;
       box-sizing: border-box;
       margin-bottom: 10px;
       transition: transform 0.3s, box-shadow 0.3s;
     }
+    form button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #c82333;
+        }

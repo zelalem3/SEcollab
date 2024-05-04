@@ -39,12 +39,13 @@ class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(100), unique=True)
-    fname = Column(String, nullable=False)
-    lname = Column(String, nullable=False)
+    username = Column(String)
+    fname = Column(String(30), nullable=False)
+    lname = Column(String(30), nullable=False)
     profile_photo = Column(String)
     about_me = Column(String, nullable=False)
-    phone_number = Column(String, nullable=False)
-    age = Column(String, nullable=False)
+    phone_number = Column(String(11), nullable=False)
+    age = Column(String(11), nullable=False)
     status = Column(String, nullable=False)
     skills = Column(String, nullable=False)
     portfolio = Column(String)
@@ -84,14 +85,13 @@ class Follower(db.Model):
     followed_user = relationship("User", foreign_keys=[user_id], back_populates="followers")
     follower = relationship("User", foreign_keys=[follower_id], back_populates="following")
 
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String)
+    phone = db.Column(db.String)
+    email = db.Column(db.String)
+    message = db.Column(db.String)
 
-class Interest(db.Model):
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    project_id = Column(Integer, ForeignKey('collabration.id'), nullable=False)
-
-    user = relationship("User", back_populates="interests")
-    collabration = relationship("Collabration", back_populates="interests")
 
 class Userscomment(db.Model):
     __tablename__ = "comments"
@@ -113,12 +113,29 @@ class Collabration(db.Model):
     user = relationship("User", back_populates="collabration")
     interests = relationship("Interest", back_populates="collabration")
 
+class Interest(db.Model):
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    project_id = Column(Integer, ForeignKey('collabration.id'), nullable=False)
+
+    user = relationship("User", back_populates="interests")
+    collabration = relationship("Collabration", back_populates="interests")
 
 
 with app.app_context():
     db.create_all()
 
 
+@app.route("/interestinmyproject/<int:id>", methods=["GET"])
+@login_required
+def specficinterestinmyproject(id):
+    project = Collabration.query.filter_by(id=id).first()
+    if project:
+        if project.user_id == current_user.id:
+            all_interest = project.interests
+            return render_template("interestinmyproject.html", interests=all_interest, project=project)
+    else:
+         return jsonify("NO project was found!!")
 
 
 @app.route("/myfollowers", methods=["GET", "POST"])
@@ -196,42 +213,52 @@ def deleteinterest(id):
 
 
 @app.route("/forgotpassword", methods=["GET", "POST"])
-def forgotpassword():
+def forgetpassword():
     if request.method == "POST":
-        user = User.query.filter_by(id=current_user.id).first()
 
 
-        smtp_server = "smtp.gmail.com"
-        port = 587  # For starttls
-        sender_email = "zgetnet24@gmail.com"
-        receiver_email = "fikadugetnet428@gmail.com"
-        password = "Scooponset1"
-        subject = "Test Email"
-        body = "This is a plain text email sent from Python using smtplib."
-        message = f"Subject: {subject}\n\n{body}"
+        email = request.form["email"]
+        user = User.query.filter_by(email=email).first()
+        if user:
+            smtp_server = "smtp.gmail.com"
+            port = 587
+            sender_email = "zgetnet24@gmail.com"
+            receiver_email = email
+            new_password = "newpassword"
+            password = "Scooponset1"
+            subject = "Regarding a lost password"
+            body = f"You cah login using this password {new_password}"
+            message = f"Subject: {subject}\n\n{body}"
 
-        try:
-            server = smtplib.SMTP(smtp_server, port)
-            server.ehlo()  # Can be omitted
-            server.starttls()  # Secure the connection
-            server.ehlo()  # Can be omitted
-            server.login(sender_email, password)
-            server.sendmail(sender_email, receiver_email, message)
-            return jsonify("Email sent successfully!")
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return jsonify("Email sent successfully!")
-        finally:
-            server.quit()
+            try:
+                server = smtplib.SMTP(smtp_server, port)
+                server.ehlo()
+                server.starttls()
+                server.ehlo()
+                server.login(sender_email, password)
+                server.sendmail(sender_email, receiver_email, message)
+                return redirect(url_for('emailsent'))
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                flash(f"email not sent: {e}")
+                return redirect(url_for('forgetpassword'))
+            finally:
+                server.quit()
 
-        referrer = request.referrer
-        if referrer:
-            return redirect(referrer)
-
+            referrer = request.referrer
+            if referrer:
+                return redirect(referrer)
+        else:
+            flash("incorrect email")
+            return redirect(url_for('forgetpassword'))
 
     else:
         return render_template("forgetpassword.html")
 
+
+@app.route("/emailsent", methods=["GET"])
+def emailsent():
+    return render_template("emailsent.html")
 
 
 @app.route("/followingblogs", methods=["POST", "GET"])
@@ -312,10 +339,33 @@ def otherfollowers(id):
     return render_template("otherfollowers.html", allfollowers=followers, user=user)
 
 
-
-@app.route("/changepassword", methods=["GET"])
+@app.route("/changepassword", methods=["GET", "POST"])
 @login_required
 def changepassword():
+    user = current_user
+    if request.method == "POST":
+        old_password = request.form.get("password")
+        if not check_password_hash(user.password, old_password):
+            flash('Incorrect password, please try again.')
+            return redirect(url_for('changepassword'))
+
+        new_password = request.form["newpassword"]
+        confirm_password = request.form["confirm-password"]
+        if new_password != confirm_password:
+            flash("Confirmation password is not the same as the password you entered.")
+            return redirect(url_for('changepassword'))
+
+        hash_and_salted_password = generate_password_hash(
+            new_password,
+            method='pbkdf2:sha256',
+            salt_length=8
+        )
+        user.password = hash_and_salted_password
+        db.session.commit()
+
+        flash("Password changed successfully.")
+        return redirect(url_for('home'))
+
     return render_template("changepassword.html")
 
 
@@ -373,6 +423,16 @@ def signup():
         status = bleach.clean(request.form['status'])
         phone_number = bleach.clean(request.form['phone_number'])
         about_me = bleach.clean(request.form["about_me"])
+        protfolie = bleach.clean(request.form["previous"])
+        portfolio = Column(String)
+        username = Column(String)
+
+
+        collabration = relationship("Collabration", back_populates="user")
+        followers = relationship("Follower", foreign_keys="[Follower.user_id]", back_populates="followed_user")
+        following = relationship("Follower", foreign_keys="[Follower.follower_id]", back_populates="follower")
+        interests = relationship("Interest", back_populates="user")
+
         image_path = None
         if 'image' in request.files and request.files['image'].filename != '':
             image = request.files['image']
@@ -417,7 +477,8 @@ def signup():
             City=city,
             about_me=about_me,
             profile_photo=image_path,
-             password=hash_and_salted_password
+            portfolio=portfolio,
+             password=hash_and_salted_password,
         )
 
         db.session.add(new_user)
@@ -433,8 +494,26 @@ def signup():
 
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
-    is_logged_in = current_user.is_authenticated
-    return render_template("contact.html", is_logged_in=is_logged_in, year=current_year)
+    if request.method == "POST":
+        name = bleach.clean(request.form["name"])
+        email = bleach.clean(request.form["email"])
+        phone = bleach.clean(request.form["phone"])
+        message = bleach.clean(request.form["message"])
+        new_message = Message(
+            name=name,
+            phone=phone,
+            email=email,
+            message=message,
+        )
+
+        db.session.add(new_message)
+        db.session.commit()
+        flash("your message has been Recieved")
+        return redirect(url_for('contact'))
+
+    else:
+        is_logged_in = current_user.is_authenticated
+        return render_template("contact.html", is_logged_in=is_logged_in)
 
 
 @app.route("/about", methods=["GET", "POST"])
@@ -852,11 +931,6 @@ def interestinmyproject():
 
 
 
-@app.route("/interestinmyproject/<int:id>", methods=["GET"])
-@login_required
-def specficinterestinmyproject(id):
-    return render_template("specficinterestinmyproject.html")
-
 
 
 @app.route("/explore", methods=["GET"])
@@ -873,6 +947,12 @@ def registeredInterest():
     all_interest = Interest.query.filter_by(user_id=current_user.id).all()
 
     return render_template('Registeredinterest.html', interests=interests, all_interest=all_interest)
+
+
+@app.route("/userblogs/<int:id>", methods=["GET", "POST"])
+def userblogs(id):
+    blogs = Blog.query.filter_by(users_id=id).all()
+    return render_template("userblog.html", blogs=blogs)
 
 
 
