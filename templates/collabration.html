@@ -3,125 +3,16 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Projects</title>
+    <link rel="stylesheet" href="../static/css/sidebar.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
-        }
-
-        .navbar {
-            background-color: #343a40;
-            color: white;
-        }
-
-        .navbar-brand {
-            font-weight: bold;
-        }
-
-        .nav-link {
-            color: white;
-        }
-
-        .nav-link:hover {
-            color: #f8f9fa;
-        }
-
-        .parent {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .child {
-            background-color: #ffffff;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin: 10px;
-            width: 300px;
-        }
-
-        .child p {
-            margin: 0;
-            padding: 0;
-            font-size: 16px;
-        }
-
-        .child a {
-            display: block;
-            text-align: center;
-            margin-top: 10px;
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .child a:hover {
-            text-decoration: underline;
-        }
-
-        form button {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 5px 10px;
-            margin-top: 10px;
-            cursor: pointer;
-        }
-
-        form button:hover {
-            background-color: #c82333;
-        }
-
-    </style>
+    <link rel="stylesheet" href="../static/css/collabration.css">
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">SEcollab</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('home') }}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('explore') }}">Explore</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            Resources
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('contact') }}">Contact Us</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('about') }}">About Us</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('allcollbration') }}">All Projects</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('allblogs') }}">All Blogs</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+{% include "navigationloggedout.html" %}
+{% include "sidebar.html" %}
     <div class="container">
         <div class="parent">
             {% for project in  collabrations%}
@@ -135,6 +26,9 @@
             {% endfor %}
         </div>
     </div>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+
 </body>
 
 </html>

@@ -7,14 +7,7 @@ body {
     line-height: 1.6;
 }
 
-header, .navbar {
-    background-color: #2C3E50;
-    color: white;
-}
 
-.navbar a, .offcanvas a {
-    color: white;
-}
 
 .hero-content {
     text-align: center;
@@ -80,13 +73,6 @@ input[type="text"], input[type="password"] {
     color: #333;
 }
 
-ul {
-    padding: 0;
-}
-
-ul li {
-    list-style-type: none;
-}
 .container {
     display: flex;
     justify-content: space-around; /* Adjusts space between sections */
@@ -117,4 +103,16 @@ ul li {
 h2 {
     text-align: center; /* Centers section headers */
 }
+.offcanvas a {
+    color: white;
+    padding: 10px 20px;
+    display: block;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.offcanvas a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
 
