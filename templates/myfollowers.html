@@ -17,11 +17,15 @@
     <div class="container">
         <h1>Your Followers</h1>
         <div class="following">
+            {% if followers %}
             {% for follower in followers %}
             <div class="follower">
                 <p>{{ follower.fname }} {{ follower.lname }}</p>
             </div>
             {% endfor %}
+            {% else %}
+            <h3 style="margin-left: 30%;">You have no followers yet </h3>
+            {% endif %}
         </div>
     </div>
 

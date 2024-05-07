@@ -287,7 +287,7 @@ def allcollbration():
     per_page = 10
     offset = (page - 1) * per_page
 
-    collabrations = Collabration.query.get(Collabration.user_id != current_user.id).offset(offset).limit(per_page).all()
+    collabrations = Collabration.query.filter(Collabration.user_id != current_user.id).offset(offset).limit(per_page).all()
 
 
     total_records = Collabration.query.count()
@@ -889,8 +889,12 @@ def deleteaccount():
     if request.method == "POST":
         user = User.query.filter_by(id=current_user.id).first()
         collabrations = Collabration.query.filter_by(user_id=current_user.id).all()
+        current_dir = os.getcwd()
+
+
         if user.profile_photo is not None:
-            os.remove(f"../{user.profile_photo}")
+            full_path = os.path.join(current_dir, user.profile_photo)
+            os.remove(full_path)
         logout_user()
         db.session.delete(user)
         db.session.commit()
@@ -942,8 +946,9 @@ def interestinmyproject():
 
 @app.route("/explore", methods=["GET"])
 def explore():
+    is_logged_in = current_user.is_authenticated
     user = User.query.filter_by(id=current_user.id).first()
-    return render_template("explore.html", user=user)
+    return render_template("explore.html", user=user, is_logged_in=is_logged_in)
 
 
 

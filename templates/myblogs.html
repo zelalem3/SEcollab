@@ -22,8 +22,9 @@
 
 <div class="container">
     <div class="parent">
+      {% if blogs %}
       {% for blog in blogs %}
-      {% if blog is defined%}
+
       <div class="child">
         <img src="../static/images/dog-img.jpg" class="card-img-top" alt="Blog Image">
         <div class="card-body">
@@ -37,12 +38,15 @@
                     <button type="submit">Delete</button>
                 </form>
         </div>
+        {% endfor %}
       </div>
        {% else %}
-        <p>you have no blog</p>
+        <h3 style="margin-left: 30%;">you have no blogs yet</h3>
+      <a href="{{ url_for('newblog') }}"><button type="button" class="btn btn-info">Add new Blog</button></a>
+
         {% endif %}
 
-      {% endfor %}
+
     </div>
   </div>
   <hr>

@@ -15,6 +15,7 @@
     <div class="container">
         <h1>People You Follow</h1>
         <div class="followers">
+            {% if allfollowing %}
             {% for f in allfollowing %}
             <div class="follower">
                 <p>{{ f.follower.fname }} {{ f.follower.lname }}</p>
@@ -22,46 +23,16 @@
                 <button class="unfollow-btn" follower-id="{{ f.follower_id }}">Unfollow</button>
             </div>
             {% endfor %}
+            {% else %}
+            <h3 style="margin-left: 30%;margin-top:40px;">You don't follow anyone yet</h3>
+            <a style="margin-left: 30%" href="{{ url_for('otherusers') }}"><button type="button" class="btn btn-info">Click her to see other users</button></a>
+
+            {% endif %}
         </div>
     </div>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
 
-<script>
-   var unfollowButtons = document.querySelectorAll(".unfollow-btn");
-
-unfollowButtons.forEach(function(button) {
-
-  button.addEventListener("click", function() {
-  var user_id = button.getAttribute("user-id");
-    fetch("http://127.0.0.1:5000/unfollow/" + user_id, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then(function(response) {
-        if (response.ok) {
-          button.textContent = "Follow";
-          return response.json();
-        } else {
-          throw new Error("Error: " + response.status);
-        }
-      })
-      .then(function(data) {
-        if (data && data.message) {
-          console.log(data.message);
-           button.textContent = "Follow";
-        } else {
-          throw new Error("Invalid response data");
-        }
-      })
-      .catch(function(error) {
-        console.error(error);
-      });
-  });
-});
-
-</script>
+<script src="../static/js/myfollowing.js"></script>
 </body>
 </html>

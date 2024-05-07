@@ -23,6 +23,7 @@
 
     <div class="container">
         <div class="parent">
+            {% if results %}
             {% for result in  results %}
             <div class="child">
                 <p>Project Title: {{ result.name }}</p>
@@ -32,6 +33,9 @@
 
             </div>
             {% endfor %}
+            {% else %}
+             <h3>There are no search results</h3>
+      {% endif %}
         </div>
     </div>
 

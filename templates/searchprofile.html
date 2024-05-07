@@ -23,6 +23,7 @@
 
     <!-- User cards -->
     <div class="row">
+      {% if results %}
       {% for result in results %}
       <div class="col-md-4">
         <div class="card user-card">
@@ -36,6 +37,9 @@
         </div>
       </div>
       {% endfor %}
+      {% else %}
+      <h3>There are no search results</h3>
+      {% endif %}
     </div>
   </div>
 

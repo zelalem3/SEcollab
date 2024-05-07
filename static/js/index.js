@@ -1,10 +1,11 @@
- var unfollowButtons = document.querySelectorAll(".unfollow-btn");
 
-unfollowButtons.forEach(function(button) {
 
-  button.addEventListener("click", function() {
+var followButtons = document.querySelectorAll(".follow");
+
+followButtons.forEach(function(button) {
   var user_id = button.getAttribute("user-id");
-    fetch("http://127.0.0.1:5000/unfollow/" + user_id, {
+  button.addEventListener("click", function() {
+    fetch("http://127.0.0.1:5000/follow/" + user_id, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -12,7 +13,7 @@ unfollowButtons.forEach(function(button) {
     })
       .then(function(response) {
         if (response.ok) {
-          button.textContent = "Follow";
+          button.textContent = "Followed";
           return response.json();
         } else {
           throw new Error("Error: " + response.status);
@@ -21,7 +22,7 @@ unfollowButtons.forEach(function(button) {
       .then(function(data) {
         if (data && data.message) {
           console.log(data.message);
-           button.textContent = "Follow";
+           button.textContent = "Followed";
         } else {
           throw new Error("Invalid response data");
         }
