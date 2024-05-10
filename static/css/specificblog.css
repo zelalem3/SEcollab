@@ -58,14 +58,14 @@ body {
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
             margin-top: 0;
-            margin-left: 40%;
+            margin-left: 10%;
         }
 
         .post-subtitle {
             color: #555;
             font-size: 24px;
             margin-bottom: 30px;
-            margin-left: 30%;
+            margin-left: 10%;
         }
 
         .post-meta {

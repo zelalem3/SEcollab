@@ -5,6 +5,7 @@ var followButtons = document.querySelectorAll(".follow");
 followButtons.forEach(function(button) {
   var user_id = button.getAttribute("user-id");
   button.addEventListener("click", function() {
+
     fetch("http://127.0.0.1:5000/follow/" + user_id, {
       method: "POST",
       headers: {
@@ -12,7 +13,9 @@ followButtons.forEach(function(button) {
       },
     })
       .then(function(response) {
+
         if (response.ok) {
+
           button.textContent = "Followed";
           return response.json();
         } else {

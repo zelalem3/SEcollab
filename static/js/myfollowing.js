@@ -3,7 +3,9 @@
 unfollowButtons.forEach(function(button) {
 
   button.addEventListener("click", function() {
-  var user_id = button.getAttribute("user-id");
+
+  var user_id = button.getAttribute("follower-id");
+
     fetch("http://127.0.0.1:5000/unfollow/" + user_id, {
       method: "POST",
       headers: {
@@ -11,6 +13,7 @@ unfollowButtons.forEach(function(button) {
       },
     })
       .then(function(response) {
+
         if (response.ok) {
           button.textContent = "Follow";
           return response.json();

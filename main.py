@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_user, LoginManager, login_required, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import bleach
@@ -8,11 +7,11 @@ from datetime import timedelta
 from flask import abort, jsonify
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey,Table
 from sqlalchemy.orm import relationship
 import random
 from sqlalchemy import desc
-from sqlalchemy import or_
+
 import smtplib
 from werkzeug.utils import secure_filename
 
@@ -66,6 +65,25 @@ class User(UserMixin, db.Model):
     following = relationship("Follower", foreign_keys="[Follower.follower_id]", back_populates="follower")
     interests = relationship("Interest", back_populates="user")
 
+team_members = Table('team_members', db.Model.metadata,
+    Column('project_id', Integer, ForeignKey('collabration.id')),
+    Column('user_id', Integer, ForeignKey('users.id'))
+)
+class Collabration(db.Model):
+    __tablename__ = "collabration"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+    uploaded_date = Column(String, nullable=False, default=datetime.date.today().strftime("%B %d, %Y"))
+    requirment = Column(String, nullable=False)
+    Looking_for = Column(String, nullable=False)
+    due_date = Column(String)
+    members = relationship("User", secondary=team_members, backref="teams")
+    user = relationship("User", back_populates="collabration")
+    interests = relationship("Interest", back_populates="collabration")
+
+
 class Blog(db.Model):
     __tablename__ = "blogs"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -101,18 +119,6 @@ class Userscomment(db.Model):
     comment = Column(String, nullable=False)
     user = relationship("User", back_populates="comments")
 
-class Collabration(db.Model):
-    __tablename__ = "collabration"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    name = Column(String, nullable=False)
-    description = Column(String, nullable=False)
-    uploaded_date = Column(String, nullable=False, default=datetime.date.today().strftime("%B %d, %Y"))
-    requirment = Column(String, nullable=False)
-    Looking_for = Column(String, nullable=False)
-    due_date = Column(String)
-    user = relationship("User", back_populates="collabration")
-    interests = relationship("Interest", back_populates="collabration")
 
 class Interest(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -123,8 +129,57 @@ class Interest(db.Model):
     collabration = relationship("Collabration", back_populates="interests")
 
 
+
 with app.app_context():
     db.create_all()
+
+
+@app.route("/accept/<int:id>/<int:userid>", methods=["GET"])
+@login_required
+def accept(id,userid):
+    project = Collabration.query.filter_by(id=id).first()
+    if project:
+        if current_user.id == project.users_id:
+            user = User.query.filter_by(id=userid).first()
+            if current_user.id == user.id:
+                project.members.append(user)
+                db.session.commit()
+        else:
+            return redirect()
+
+
+@app.route("/followedprojects", methods=["GET", "POST"])
+def followedprojects():
+    id = current_user.id
+
+@app.route("/follow/<int:id>", methods=["POST"])
+@login_required
+def follow(id):
+    try:
+        user_id = current_user.id
+        if id == user_id:
+            response = {"message": "You can't follow yourself"}
+            return jsonify(response), 400
+
+        user = User.query.filter_by(id=user_id).first()
+        if user_id in [follower.id for follower in user.following]:
+            flash("you already follow that user")
+            response = {"message": "You are already following this user"}
+            return jsonify(response), 400
+
+        new_follower = Follower(user_id=id, follower_id=user_id)
+        db.session.add(new_follower)
+        db.session.commit()
+
+        response = {"message": "Follower added successfully."}
+        return jsonify(response), 200
+
+
+    except Exception as e:
+        # Log the error and return an error response
+        app.logger.error(f"An error occurred: {str(e)}")
+        response = {"message": "An error occurred"}
+        return jsonify(response), 500
 
 
 @app.route("/interestinmyproject/<int:id>", methods=["GET"])
@@ -143,10 +198,20 @@ def specficinterestinmyproject(id):
 @app.route("/myfollowers", methods=["GET", "POST"])
 @login_required
 def myfollowers():
-    followers = Follower.query.filter_by(user_id=current_user.id).all()
+    page = request.args.get("page", default=1, type=int)
+    per_page = 10
+    offset = (page - 1) * per_page
+    followers = Follower.query.filter_by(user_id=current_user.id).offset(offset).limit(per_page).all()
     followers = [follower.follower for follower in followers]
+
     user = User.query.filter_by(id=current_user.id).first()
-    return render_template("myfollowers.html", followers=followers, user=user)
+
+    total_records = User.query.count()
+
+    total_pages = (total_records // per_page) + (1 if total_records % per_page > 0 else 0)
+
+    return render_template("myfollowers.html", user=user, page=page, total_pages=total_pages, followers=followers)
+
 
 
 def checkdue_date(allcollaboration):
@@ -212,12 +277,8 @@ def deleteinterest(id):
     response = {"message": "Interest has not been deleted try again!"}
     return jsonify(response), 400
 
-
-
-
-
-
-@app.route("/forgotpassword", methods=["GET", "POST"])
+@app.route("/forgotpasswordloggedin", methods=["GET", "POST"])
+@login_required
 def forgetpassword():
     user = User.query.filter_by(id=current_user.id).first()
     user_email = user.email
@@ -240,6 +301,35 @@ def forgetpassword():
         return redirect(url_for('home'))
     else:
         return render_template("forgetpassword.html", email=user_email, user=user)
+
+
+
+
+
+@app.route("/forgotpasswordloggedout", methods=["GET", "POST"])
+def forgetpasswordloggedout():
+    user = []
+    if request.method == "POST":
+        email = request.form["email"]
+        user = User.query.filter_by(email=email).first()
+        mailuser = 'zgetnet24@gmail.com'
+        mailpasswd = 'Scooponset1'
+        fromaddr = 'zgetnet24@gmail.com'
+        toaddrs = "zelalem328@gmail.com"
+        msg = 'Subject: Test Email\n\nThis is a test email from Python.'
+        if user:
+            try:
+                server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+                server.login(mailuser, mailpasswd)
+                server.sendmail(fromaddr, toaddrs, msg)
+                print("Email sent successfully!")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+            finally:
+                server.quit()
+        return redirect(url_for('home'))
+    else:
+        return render_template("forgetpasswordloggedout.html",  user=user)
 
 @app.route("/emailsent", methods=["GET"])
 def emailsent():
@@ -417,10 +507,6 @@ def signup():
 
 
 
-        collabration = relationship("Collabration", back_populates="user")
-        followers = relationship("Follower", foreign_keys="[Follower.user_id]", back_populates="followed_user")
-        following = relationship("Follower", foreign_keys="[Follower.follower_id]", back_populates="follower")
-        interests = relationship("Interest", back_populates="user")
 
         image_path = None
         if 'image' in request.files and request.files['image'].filename != '':
@@ -554,10 +640,21 @@ def Specficblog(id):
 @app.route("/myblogs", methods=["GET", "POST"])
 @login_required
 def myblogs():
-    blogs = Blog.query.filter_by(user_id=current_user.id).all()
+
+    page = request.args.get("page", default=1, type=int)
+    per_page = 10
+    offset = (page - 1) * per_page
+    blogs = Blog.query.filter_by(user_id=current_user.id).offset(offset).limit(per_page).all()
     user = User.query.filter_by(id=current_user.id).first()
 
-    return render_template("myblogs.html", blogs=blogs, user=user)
+    total_records = Blog.query.count()
+
+    total_pages = (total_records // per_page) + (1 if total_records % per_page > 0 else 0)
+
+    return render_template("myblogs.html", user=user, page=page, total_pages=total_pages, blogs=blogs)
+
+
+
 
 #
 @app.route("/editblog/<id>", methods=["GET", "POST"])
@@ -613,6 +710,10 @@ def editprofile():
             skills = bleach.clean(request.form['skills'])
             status = bleach.clean(request.form['status'])
             about_me = bleach.clean(request.form["about_me"])
+            portfolio = bleach.clean(request.form["previous"])
+            username = bleach.clean(request.form["username"])
+            employment_status = request.form['employment-status']
+            education_level = request.form['education-level']
             image_path = None
             if 'image' in request.files and request.files['image'].filename != '':
                 image = request.files['image']
@@ -637,7 +738,11 @@ def editprofile():
             user.status = status
             user.profile_photo = image_path
             user.about_me = about_me
+            user.portfolio = portfolio
+            user.employment_status = employment_status
+            user.education_level = education_level
             db.session.commit()
+
             return redirect(url_for('myprofile'))
 
     else:
@@ -753,10 +858,29 @@ def addcollab():
 @app.route("/myproject", methods=["GET", "POST"])
 @login_required
 def myprojects():
+    page = request.args.get("page", default=1, type=int)
+    per_page = 10
+    offset = (page - 1) * per_page
     user = User.query.filter_by(id=current_user.id).first()
     user_id = current_user.id
-    projects = Collabration.query.filter_by(user_id=user_id)
-    return render_template("myproject.html", projects=projects, user=user)
+
+    projects = Collabration.query.filter_by(user_id=user_id).offset(offset).limit(per_page).all()
+    total_records = Collabration.query.count()
+    total_pages = (total_records // per_page) + (1 if total_records % per_page > 0 else 0)
+
+
+
+    return render_template("myproject.html", user=user, page=page, total_pages=total_pages, projects=projects)
+
+
+
+
+
+
+
+
+
+
 
 @app.route("/otherprojects/<int:id>", methods=["GET"])
 @login_required
@@ -819,33 +943,9 @@ def otherusers():
 
     total_pages = (total_records // per_page) + (1 if total_records % per_page > 0 else 0)
 
-    return render_template("otherusers.html", user=user, page=page, total_pages=total_pages)
+    return render_template("otherusers.html", users=users, page=page, total_pages=total_pages,user=user)
 
 
-
-@app.route("/follow/<int:id>", methods=["POST"])
-@login_required
-def follow(id):
-    user_id = current_user.id
-    if id == user_id:
-        response = {"Message": "Follower not added already followed"}
-        flash("You can follow yourself")
-        return jsonify(response), 200
-
-    followers = Follower.query.filter_by(user_id=user_id).all()
-    for follower in followers:
-        if follower.follower_id == user_id:
-            response = {"Message": "Follower not added already followed"}
-            flash("already follows that user")
-            return jsonify(response), 200
-    new_follower = Follower(user_id=id, follower_id=user_id)
-
-    db.session.add(new_follower)
-    db.session.commit()
-
-    # Return a JSON response indicating the success of the request
-    response = {"message": "Follower added successfully."}
-    return jsonify(response), 200
 
 
 
@@ -894,6 +994,7 @@ def deleteaccount():
 
         if user.profile_photo is not None:
             full_path = os.path.join(current_dir, user.profile_photo)
+
             os.remove(full_path)
         logout_user()
         db.session.delete(user)
@@ -908,7 +1009,7 @@ def deleteaccount():
 def unfollow(follower_id):
     user_id = current_user.id
 
-    following = Follower.query.filter_by(follower_id=user_id, id=follower_id).first()
+    following = Follower.query.filter_by(follower_id=user_id).first()
 
     if following:
 
@@ -978,6 +1079,20 @@ def fetchusername(username):
     else:
         response = {"message": "Username is available."}
         return jsonify(response), 200
+
+
+@app.route("/deleteprofile", methods=["POST"])
+def deleteprofile():
+    user = User.query.filter_by(id=current_user.id).first()
+    current_dir = os.getcwd()
+    full_path = os.path.join(current_dir, user.profile_photo)
+
+    os.remove(full_path)
+    return redirect(url_for('editprofile'))
+
+@app.route("/landing", methods=["GET"])
+def landginpage():
+    return render_template("ladingpage.html")
 
 # allcollaboration = Collabration.query.all()
 # checkdue_date(allcollaboration)

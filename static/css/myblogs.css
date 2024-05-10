@@ -104,21 +104,19 @@
 .navbar-nav .nav-link.active {
   color: white;
 }
- .parent {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-       animation: scroll 1s ease-in-out;
-    }
+.parent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
 
-    .child {
-      width: calc(33% - 40px);
-
-      padding: 20px;
-      box-sizing: border-box;
-      margin-bottom: 10px;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
+.parent > .child {
+  width: calc(33% - 40px);
+  padding: 20px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
     form button {
             background-color: #dc3545;
             color: white;
