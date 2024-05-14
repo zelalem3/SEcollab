@@ -8,18 +8,18 @@
     <link rel="stylesheet" href="../static/css/sidebar.css">
 </head>
 <body>
-{% include "navigationloggedout.html" %}
+{% include "navigationloggedin.html" %}
 {% include "sidebar.html" %}
 
 
     <div class="container">
-        <h1>People You Follow</h1>
+        <h1>Users I'm Following</h1>
         <div class="followers">
             {% if allfollowing %}
             {% for f in allfollowing %}
             <div class="follower">
-                <p>{{ f.follower.fname }} {{ f.follower.lname }}</p>
-                <!-- Use class instead of id -->
+               <a href="{{ url_for('profile',id=f.follower.id) }}"><p>{{ f.follower.fname }} {{ f.follower.lname }}</p></a>
+
                 <button class="unfollow-btn" follower-id="{{ f.follower_id }}" >Unfollow</button>
             </div>
             {% endfor %}

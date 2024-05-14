@@ -13,7 +13,7 @@ followButtons.forEach(function(button) {
       },
     })
       .then(function(response) {
-
+        alert(response.status);
         if (response.ok) {
 
           button.textContent = "Followed";

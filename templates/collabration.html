@@ -13,9 +13,17 @@
 <body>
 {% include "navigationloggedin.html" %}
 {% include "sidebar.html" %}
-    <div class="container">
+
         <div class="parent">
+
             {% if collabrations %}
+            <div class="container">
+        <div style="width: 40%;margin-left: 40%;">
+
+        <input class="form-control me-2" type="search" placeholder="Search" id="text" aria-label="Search">
+        <button style="margin: 10px;" class="btn btn-outline-success"  id="search" type="submit">Search</button>
+
+  </div>
             {% for project in  collabrations %}
             <div class="child">
                 <p>{{ project.name }}</p>

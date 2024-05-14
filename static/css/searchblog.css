@@ -82,9 +82,7 @@
       margin-bottom: 10px;
       margin-left: 20%;
     }
-    button{
-    margin-left: 30%;
-    }
+
 
     .card-text {
       font-size: 16px;
@@ -106,4 +104,24 @@
 }
 .navbar-nav .nav-link.active {
   color: white;
+}
+   #icon {
+    border: none !important;
+}
+/* Styling for the button */
+.like-button {
+    display: inline-block;
+
+    color: black; /* Button text color */
+    padding: 5px 10px; /* Padding inside the button */
+    border: none; /* Remove button border */
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+/* Styling for the like count */
+.like-count {
+    display: inline-block;
+    margin-left: 10px; /* Add some space between button and count */
+    font-size: 16px; /* Font size of the count */
+    color: #333; /* Text color of the count */
 }
