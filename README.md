@@ -119,7 +119,7 @@ TechTeam - A community-driven website for connecting tech professionals.
   
 
 Screenshots 
-![blog](https://ibb.co/N6yvRJL)
+![blog](blog.PNG)
 ![profile](https://ibb.co/ZMNk7Nj)
 ![home](https://ibb.co/JcDP1sM)
 
