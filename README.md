@@ -6,7 +6,7 @@ SEcollab is a web application that connects software engineers (SEs) with each o
 
   
 
-The website is deployed at https://www.secollab.com. You can read a blog post about the project at https://www.secollab.com/blog/introducing-secollab. The project was developed by John Doe and Jane Smith. 
+You can read a blog post about the project at https://medium.com/@z88812586/secollab-341254825602. The project was developed by Fikadu Getnet and Zelalem Getnet. 
 
   
 
@@ -146,7 +146,9 @@ Conclusion
 SEcollab is the result of my personal frustrations with finding the right project partners and my desire to create a solution that would benefit the broader software engineering community. Through this project, I've not only honed my technical skills but also gained valuable insights into the importance of empathy, user-centric design, and the power of solving real-world problems.
 
 As I continue to evolve SEcollab, I'm excited to see how the platform will continue to foster meaningful connections and enable more successful collaborative experiences for software engineers around the world.
-
+Team Member
+1.Fikadu Getnet - fikadu5
+2.Zelalem Getnet - zelalem3
   
 
 Screenshots 
