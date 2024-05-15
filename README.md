@@ -120,8 +120,8 @@ TechTeam - A community-driven website for connecting tech professionals.
 
 Screenshots 
 ![blog](blog.PNG)
-![profile](https://ibb.co/ZMNk7Nj)
-![home](https://ibb.co/JcDP1sM)
+![profile](profile.PNG)
+![home](home.PNG)
 
  
 
