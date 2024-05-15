@@ -18,7 +18,7 @@
             {% if allfollowing %}
             {% for f in allfollowing %}
             <div class="follower">
-               <a href="{{ url_for('profile',id=f.follower.id) }}"><p>{{ f.follower.fname }} {{ f.follower.lname }}</p></a>
+               <a href="{{ url_for('profile',id=f.follower.id) }}"><p>{{ f.followed_user.fname }} {{ f.followed_user.lname }}</p></a>
 
                 <button class="unfollow-btn" follower-id="{{ f.follower_id }}" >Unfollow</button>
             </div>

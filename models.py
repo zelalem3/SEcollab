@@ -50,15 +50,25 @@ class User(UserMixin, db.Model):
     followers = relationship("Follower", foreign_keys="[Follower.user_id]",back_populates="followed_user")
     following = relationship("Follower", foreign_keys="[Follower.follower_id]", back_populates="follower")
     interests = relationship("Interest", back_populates="user")
+class Follower(db.Model):
+    __tablename__ = "followers"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    follower_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+
+    followed_user = relationship("User", foreign_keys=[user_id], back_populates="followers")
+    follower = relationship("User", foreign_keys=[follower_id], back_populates="following")
 
 
 class Blog(db.Model):
     __tablename__ = "blogs"
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('users.id'))
+
     title = Column(String, nullable=False)
     subtitle = Column(String, nullable=False)
     content = Column(String, nullable=False)
+    blog_image = Column(String)
     like = Column(Integer, nullable=False, default=0)
     date = Column(String, default=datetime.date.today().strftime("%B %d, %Y"))
 
@@ -86,14 +96,6 @@ class Collabration(db.Model):
 
 
 
-class Follower(db.Model):
-    __tablename__ = "followers"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    follower_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-
-    followed_user = relationship("User", foreign_keys=[user_id], back_populates="followers")
-    follower = relationship("User", foreign_keys=[follower_id], back_populates="following")
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

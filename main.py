@@ -2,7 +2,6 @@ import random
 from sqlalchemy import desc
 import smtplib
 from werkzeug.utils import secure_filename
-from datetime import timedelta
 import datetime
 import os
 from sqlalchemy.sql.expression import func
@@ -26,31 +25,44 @@ PERMANENT_SESSION_LIFETIME = timedelta(seconds=28800)
 @app.route("/addoremovelike/<int:id>", methods=["POST"])
 @login_required
 def addoremovelike(id):
+    #get the current user
     user_id = current_user.id
     try:
+        #query all the specifblog to liked or remove like
         blog = Blog.query.filter_by(id=id).first()
+        #check if the current user have already liked that blog
         liked_blog = LikedBlog.query.filter_by(user_id=current_user.id, blog_id=id).first()
+        #check if the blogs exist
         if blog:
+            #check if the current user is not the owner of the blog
             if blog.user_id != user_id:
-
+                    #check if not the user has already liked that post
                 if current_user not in blog.liking_users:
+                    #add like
                     blog.like += 1
+                    #add the user to user who have already liked that post
                     blog.liking_users.append(current_user)
+                    #commit the changes to the database
                     db.session.commit()
                     response = {"message": "like added"}
                     return jsonify(response), 200
 
                 else:
+                    #if the user has already liked tha post remove the user from the liked_blogs
                     db.session.delete(liked_blog)
+                    #subtract the like of the user
                     blog.like -= 1
+                    #commit changes to the database
                     db.session.commit()
                     response = {"message": "Like Removed"}
                     return jsonify(response), 200
 
             else:
+                #if the owner of the blogs is the same as the user who is trying to like the post return a 403 response to js
                 response = {"message": "You can't like your own blog"}
                 return jsonify(response), 403
         else:
+            #if the blog doesn;t exit return a 404 response
             response = {"message": "Blog is not found"}
             return jsonify(response), 404
     except Exception as e:
@@ -61,11 +73,13 @@ def addoremovelike(id):
 
 @app.route("/topblogs", methods=["GET"])
 def TopBlogs():
+    #query the current user
     user = User.query.filter_by(id=current_user.id).first()
+    #adding pagination
     page = request.args.get("page", default=1, type=int)
     per_page = 10
     offset = (page - 1) * per_page
-
+    #query 30 top liked blogs
     blogs = Blog.query.filter(Blog.user_id != current_user.id).order_by(Blog.like.desc()).offset(offset).limit(per_page).all()
 
 
@@ -78,14 +92,20 @@ def TopBlogs():
 @app.route("/accept/<int:id>/<int:userid>", methods=["POST"])
 @login_required
 def accept(id, userid):
+    #query the project
     project = Collabration.query.get(id)
+    #if the project exist
     if project:
         if current_user.id == project.user_id:
             user = User.query.get(userid)
             if user:
+                #add th user to the team
                 project.members.append(user)
+                #query the interest of that user
                 interest = Interest.query.filter_by(user_id=userid).first()
+                #remove the user since they are on the team
                 db.session.delete(interest)
+                #comomit the changes to the database
                 db.session.commit()
                 response = {"message": "User added to the team successfully"}
                 return jsonify(response), 200
@@ -99,35 +119,34 @@ def accept(id, userid):
         response = {"message": "Project not found"}
         return jsonify(response), 404
 
-@app.route("/followedprojects", methods=["GET", "POST"])
-def followedprojects():
-    id = current_user.id
 
 @app.route("/follow/<int:id>", methods=["POST"])
 @login_required
 def follow(id):
     try:
+        #query the current user
         user_id = current_user.id
+        #check if they are trying to follow themselve
         if id == user_id:
+            # return a 400 error with a message to js fetch function
             response = {"message": "You can't follow yourself"}
             return jsonify(response), 400
 
-        user = User.query.filter_by(id=current_user.id).first()
-        if id in [following.id for following in user.following]:
-
-            for following in user.following:
-                print(following.id)
-            flash("you already follow that user")
+        # Check if the follow relationship already exists
+        existing_follow = Follower.query.filter_by(user_id=id, follower_id=user_id).first()
+        if existing_follow:
             response = {"message": "You are already following this user"}
             return jsonify(response), 400
 
+        # Add new follow relationship
         new_follower = Follower(user_id=id, follower_id=user_id)
+        #add the new follower to the databse
         db.session.add(new_follower)
+        #commit the changes to the datbase
         db.session.commit()
 
         response = {"message": "Follower added successfully."}
         return jsonify(response), 200
-
 
     except Exception as e:
         # Log the error and return an error response
@@ -139,9 +158,13 @@ def follow(id):
 @app.route("/interestinmyproject/<int:id>", methods=["GET"])
 @login_required
 def specficinterestinmyproject(id):
+    #query all the project
     project = Collabration.query.filter_by(id=id).first()
+    #query the current user
     user = User.query.filter_by(id=current_user.id).first()
+    #query the team of the project
     Team = Collabration.query.filter_by(id=id).first()
+
     team = Team.members
     if project:
         if project.user_id == current_user.id:
@@ -157,9 +180,10 @@ def myfollowers():
     page = request.args.get("page", default=1, type=int)
     per_page = 10
     offset = (page - 1) * per_page
+    #query all the user that are followers of the current user
     followers = Follower.query.filter_by(user_id=current_user.id).offset(offset).limit(per_page).all()
     followers = [follower.follower for follower in followers]
-
+    #query the curent user
     user = User.query.filter_by(id=current_user.id).first()
 
     total_records = User.query.count()
@@ -177,9 +201,10 @@ def myfollowing():
     per_page = 10
     offset = (page - 1) * per_page
     user = User.query.get(current_user.id)
+    #query all the user the current user follows
     following = Follower.query.filter_by(follower_id=current_user.id).offset(offset).limit(per_page).all()
 
-
+    #fget the count of the query
     total_records = User.query.count()
 
     total_pages = (total_records // per_page) + (1 if total_records % per_page > 0 else 0)
@@ -192,14 +217,19 @@ def myfollowing():
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-
+    #query all the projects
     allcollaboration = Collabration.query.all()
+    #call the checkdue date function to see if proijects have passed their deadline
     checkdue_date(allcollaboration)
-
+    #check if th user is authenticated
     if current_user.is_authenticated:
+        #query 5 random users
         random_users = User.query.filter(User.id != current_user.id).order_by(func.random()).limit(5).all()
+        #query the current user
         user = User.query.filter_by(id=current_user.id).first()
+        #query all the projects with exception of all the project that are made by the current user and order by decreasing project id
         collabs = Collabration.query.filter(Collabration.user_id != current_user.id).order_by(Collabration.id.desc()).limit(5)
+        #query 5 blogs that are order baded on their blog id decreasingly
         blog = Blog.query.filter(Blog.user_id != current_user.id).order_by(Blog.id.desc()).limit(5)
 
         is_logged_in = current_user.is_authenticated
@@ -212,12 +242,14 @@ def home():
 
 @app.route("/deleteinterest/<int:id>", methods=["POST"])
 def deleteinterest(id):
+    #query the project
     project = Collabration.query.filter_by(id=id).first()
+    #get all the interest in that project
     interests = project.interests
-
+    #check if the project exist
     if not project:
         return jsonify({"message": "Project not found"}), 404
-
+    #iterate through all the interest in that project
     for interest in interests:
 
         if interest.user_id == current_user.id:
@@ -672,22 +704,21 @@ def deleteblog(id):
 def editprofile():
     user = User.query.filter_by(id=current_user.id).first()
     if request.method == "POST":
-
-
             email = bleach.clean(request.form['email'])
-
             first_name = bleach.clean(request.form['first_name'])
             last_name = bleach.clean(request.form['last_name'])
             twitter = bleach.clean(request.form['twitter'])
             github = bleach.clean(request.form['github'])
             country = bleach.clean(request.form['country'])
-            city = bleach.clean(request.form['City'])
+            city = request.form['city']
             usersage = bleach.clean(request.form['age'])
             skills = bleach.clean(request.form['skills'])
             status = bleach.clean(request.form['about_me'])
             phone_number = bleach.clean(request.form['phone_number'])
             about_me = bleach.clean(request.form["about_me"])
-            portfolio = bleach.clean(request.form["previous"])
+            previous = request.form.get('previous', '')
+            employment_status = request.form['employment_status']
+            education_level = request.form['education_level']
 
             image_path = None
             if 'image' in request.files and request.files['image'].filename != '':
@@ -704,7 +735,6 @@ def editprofile():
             user.fname = first_name
             user.lname = last_name
             user.email = email
-
             user.phone_number = phone_number
             user.twitter = twitter
             user.github = github
@@ -715,8 +745,9 @@ def editprofile():
             user.status = status
             user.profile_photo = image_path
             user.about_me = about_me
-            user.portfolio = portfolio
-
+            user.portfolio = previous
+            user.education_status = education_level
+            user.employment_status = employment_status
             db.session.commit()
 
             return redirect(url_for('myprofile'))
@@ -748,11 +779,20 @@ def newblog():
     if request.method == "POST":
 
         user_id = current_user.id
+        image_path=None
+        if 'image' in request.files and request.files['image'].filename != '':
+            image = request.files['image']
+            ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+            if image.filename.split('.')[-1].lower() in ALLOWED_EXTENSIONS:
+                destination_folder = os.path.join('static', 'images')
+                image_path = os.path.join('static', 'images', secure_filename(image.filename))
+                image.save(image_path)
         new_blog = Blog(
             title=request.form.get("title"),
             content=request.form.get("content"),
             subtitle=request.form.get("subtitle"),
             user_id=user_id,
+            blog_image=image_path,
         )
         db.session.add(new_blog)
         db.session.commit()
@@ -992,7 +1032,7 @@ def deleteaccount():
 def unfollow(follower_id):
     user_id = current_user.id
 
-    following = Follower.query.filter_by(follower_id=user_id).first()
+    following = Follower.query.filter_by(follower_id=follower_id).first()
 
     if following:
 

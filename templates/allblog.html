@@ -33,7 +33,7 @@
       {% for blog in blogs %}
 
       <div class="child">
-        <img src="../static/images/dog-img.jpg" class="card-img-top" alt="Blog Image">
+        <img src="../{{ blog.blog_image}}" class="card-img-top" alt="Blog Image">
         <div class="card-body">
           <h5 class="card-title">{{ blog.title }}</h5>
           <p class="card-text">{{ blog.subtitle }}</p>
