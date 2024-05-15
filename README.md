@@ -1,4 +1,4 @@
-SEcollab 
+Ecollab 
 
 Introduction 
 
@@ -6,123 +6,120 @@ SEcollab is a web application that connects software engineers (SEs) with each o
 
   
 
-The website is deployed at https://www.secollab.com. You can read a blog post about the project at https://www.secollab.com/blog/introducing-secollab. The project was developed by John Doe and Jane Smith. 
+  The website is deployed at https://www.secollab.com. You can read a blog post about the project at https://www.secollab.com/blog/introducing-secollab. The project was developed by John Doe and Jane Smith. 
 
-  
+    
 
-Installation 
+    Installation 
 
-To run the SEcollab application locally, follow these steps: 
+    To run the SEcollab application locally, follow these steps: 
 
-  
+      
 
-Clone the repository: 
+      Clone the repository: 
 
-Copy 
+      Copy 
 
-git clone https://github.com/your-username/secollab.git 
+      git clone https://github.com/your-username/secollab.git 
 
-Navigate to the project directory: 
+      Navigate to the project directory: 
 
-Copy 
+      Copy 
 
-cd secollab 
+      cd secollab 
 
-Create a virtual environment and activate it: 
+      Create a virtual environment and activate it: 
 
-Copy 
+      Copy 
 
-python3 -m venv venv 
+      python3 -m venv venv 
 
-source venv/bin/activate 
+      source venv/bin/activate 
 
-Install the required dependencies: 
+      Install the required dependencies: 
 
-basic 
+      basic 
 
-Copy 
+      Copy 
 
-pip install -r requirements.txt 
+      pip install -r requirements.txt 
 
-Set the environment variables: 
+      Set the environment variables: 
 
-Copy 
+      Copy 
 
-export FLASK_APP=app.py 
+      export FLASK_APP=app.py 
 
-export FLASK_ENV=development 
+      export FLASK_ENV=development 
 
-Initialize the database: 
+      Initialize the database: 
 
-Copy 
+      Copy 
 
-flask db init 
+      flask db init 
 
-flask db migrate 
+      flask db migrate 
 
-flask db upgrade 
+      flask db upgrade 
 
-Run the application: 
+      Run the application: 
 
-Copy 
+      Copy 
 
-flask run 
+      flask run 
 
-The application should now be accessible at http://localhost:5000. 
+      The application should now be accessible at http://localhost:5000. 
 
-  
+        
 
-Usage 
+        Usage 
 
-Upon visiting the SEcollab website, users can: 
+        Upon visiting the SEcollab website, users can: 
 
-  
+          
 
-Create a profile and share their skills, interests, and past projects. 
+          Create a profile and share their skills, interests, and past projects. 
 
-Browse the profiles of other SEs and connect with them. 
+          Browse the profiles of other SEs and connect with them. 
 
-Initiate collaboration requests and discuss project ideas. 
+          Initiate collaboration requests and discuss project ideas. 
 
-Manage their connections and collaborations. 
+          Manage their connections and collaborations. 
 
-Follow other user 
+          Follow other user 
 
-The platform also features: 
+          The platform also features: 
 
-A search function to find SEs based on specific skills or interests. 
+          A search function to find SEs based on specific skills or interests. 
 
-A blog section where users can share their insights and experiences. 
+          A blog section where users can share their insights and experiences. 
 
-Contributing 
+          Contributing 
 
-If you'd like to contribute to the SEcollab project, please follow these steps: 
+          If you'd like to contribute to the SEcollab project, please follow these steps: 
 
-  
+            
 
-Fork the repository. 
+            Fork the repository. 
 
-Create a new branch for your feature or bug fix. 
+            Create a new branch for your feature or bug fix. 
 
-Make your changes and ensure that the application is still functioning correctly. 
+            Make your changes and ensure that the application is still functioning correctly. 
 
-Submit a pull request with a detailed description of your changes. 
+            Submit a pull request with a detailed description of your changes. 
 
-Related Projects 
+            Related Projects 
 
-ProjectHub - A platform for finding and managing software engineering projects. 
+            ProjectHub - A platform for finding and managing software engineering projects. 
 
-TechTeam - A community-driven website for connecting tech professionals. 
+            TechTeam - A community-driven website for connecting tech professionals. 
 
-  
+              
 
-  
+                
 
-Screenshots 
-![blog](blog.PNG)
-![profile](https://ibb.co/ZMNk7Nj)
-![home](https://ibb.co/JcDP1sM)
+                Screenshots 
 
- 
+                 
 
- 
+                  

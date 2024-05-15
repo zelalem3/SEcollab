@@ -3,6 +3,7 @@ from sqlalchemy import desc
 import smtplib
 from werkzeug.utils import secure_filename
 import datetime
+from datetime import timedelta
 import os
 from sqlalchemy.sql.expression import func
 from flask_login import login_user, LoginManager, login_required, current_user, logout_user
@@ -220,7 +221,7 @@ def home():
     #query all the projects
     allcollaboration = Collabration.query.all()
     #call the checkdue date function to see if proijects have passed their deadline
-    checkdue_date(allcollaboration)
+    # checkdue_date(allcollaboration)
     #check if th user is authenticated
     if current_user.is_authenticated:
         #query 5 random users
@@ -485,13 +486,14 @@ def login():
 
     return render_template("login.html")
 
-
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
+    # Check if the user is already logged in
     is_logged_in = current_user.is_authenticated
 
+    # If the request method is POST (form submission)
     if request.method == "POST":
-
+        # Clean the form data using bleach
         email = bleach.clean(request.form['email'])
         password = bleach.clean(request.form['password'])
         confirm_password = bleach.clean(request.form['confirm-password'])
@@ -511,40 +513,47 @@ def signup():
         employment_status = request.form['employment-status']
         education_level = request.form['education-level']
 
-
-
-
-
+        # Set the default profile image path
         image_path = "static/images/noprofile.jpg"
-        if 'image' in request.files and request.files['image'].filename != '':
+
+        # If the user has uploaded an image
+        if 'image' in request.files and request.form['image'].filename != '':
             image = request.files['image']
             ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+            # Check if the image file extension is allowed
             if image.filename.split('.')[-1].lower() in ALLOWED_EXTENSIONS:
                 destination_folder = os.path.join('static', 'images')
                 image_path = os.path.join('static', 'images', secure_filename(image.filename))
                 image.save(image_path)
 
+        # Check if the confirmation password matches the password
         if confirm_password != password:
-            flash("yout confirmation password does not match the password")
+            flash("Your confirmation password does not match the password")
             return redirect(url_for('signup'))
 
+        # Check if the email is already registered
         if User.query.filter_by(email=request.form.get('email')).first() is not None:
             flash("You've already signed up with that email, log in instead!")
             return redirect(url_for('login'))
 
+        # Check if all required fields are filled
         if not email or not password or not first_name or not last_name or not phone_number:
             flash("Please fill in all the required fields.")
             return redirect(url_for('signup'))
 
+        # Check if the password is at least 5 characters long
         if len(password) < 5:
             flash("Password should be at least 5 characters long.")
             return redirect(url_for('signup'))
 
+        # Hash and salt the password
         hash_and_salted_password = generate_password_hash(
             password,
             method='pbkdf2:sha256',
             salt_length=8
         )
+
+        # Create a new user
         new_user = User(
             fname=first_name,
             lname=last_name,
@@ -563,29 +572,36 @@ def signup():
             username=username,
             employment_status=employment_status,
             education_status=education_level,
-             password=hash_and_salted_password,
+            password=hash_and_salted_password,
         )
 
-
+        # Add the new user to the database and commit the changes
         db.session.add(new_user)
         db.session.commit()
 
-
+        # Log in the new user
         login_user(new_user)
 
+        # Redirect the user to the home page
         return redirect(url_for("home"))
 
+    # Render the signup template, passing the is_logged_in variable
     return render_template("signup.html", is_logged_in=is_logged_in)
-
 
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
+    # Get the current user
     user = User.query.filter_by(id=current_user.id).first()
+
+    # If the request method is POST (form submission)
     if request.method == "POST":
+        # Clean the form data using bleach
         name = bleach.clean(request.form["name"])
         email = bleach.clean(request.form["email"])
         phone = bleach.clean(request.form["phone"])
         message = bleach.clean(request.form["message"])
+
+        # Create a new message
         new_message = Message(
             name=name,
             phone=phone,
@@ -593,22 +609,27 @@ def contact():
             message=message,
         )
 
+        # Add the new message to the database and commit the changes
         db.session.add(new_message)
         db.session.commit()
-        flash("your message has been Recieved")
+        flash("Your message has been received")
         return redirect(url_for('contact'))
 
+    # Render the contact template, passing the is_logged_in and user variables
     else:
         is_logged_in = current_user.is_authenticated
         return render_template("contact.html", is_logged_in=is_logged_in, user=user)
 
-
 @app.route("/about", methods=["GET", "POST"])
 def about():
+    # Check if the user is logged in
     is_logged_in = current_user.is_authenticated
-    user = User.query.filter_by(id=current_user.id).first()
-    return render_template("about.html", is_logged_in=is_logged_in, year=current_year, user=user)
 
+    # Get the current user
+    user = User.query.filter_by(id=current_user.id).first()
+
+    # Render the about template, passing the is_logged_in, year, and user variables
+    return render_template("about.html", is_logged_in=is_logged_in, year=current_year, user=user)
 
 @app.route("/logout", methods=["GET", "POST"])
 @login_required
@@ -634,11 +655,18 @@ def allblogs():
 
     return render_template("allblog.html", blogs=blogs, page=page, user=user,total_pages=total_pages)
 
-
 @app.route("/blogs/<id>")
 @login_required
 def Specficblog(id):
+    """
+    Renders the template for a specific blog post.
 
+    Args:
+        id (str): The unique identifier of the blog post.
+
+    Returns:
+        The rendered template for the specific blog post.
+    """
     blog = Blog.query.filter_by(id=id).first()
     user = User.query.filter_by(id=blog.user_id).first()
     return render_template("specficblog.html", blog=blog, user=user)
@@ -647,7 +675,12 @@ def Specficblog(id):
 @app.route("/myblogs", methods=["GET", "POST"])
 @login_required
 def myblogs():
+    """
+    Renders the template for the user's blog posts.
 
+    Returns:
+        The rendered template for the user's blog posts.
+    """
     page = request.args.get("page", default=1, type=int)
     per_page = 10
     offset = (page - 1) * per_page
@@ -667,6 +700,15 @@ def myblogs():
 @app.route("/editblog/<id>", methods=["GET", "POST"])
 @login_required
 def editblog(id):
+    """
+    Handles the editing of a blog post.
+
+    Args:
+        id (str): The unique identifier of the blog post.
+
+    Returns:
+        The rendered template for the edit blog page or a redirect to the user's blog page.
+    """
     user = User.query.filter_by(id=current_user.id).first()
     if request.method == "POST":
         title = bleach.clean(request.form['title'])
@@ -686,6 +728,15 @@ def editblog(id):
 @app.route("/myblogs/delete/<int:id>", methods=["POST"])
 @login_required
 def deleteblog(id):
+    """
+    Handles the deletion of a blog post.
+
+    Args:
+        id (int): The unique identifier of the blog post.
+
+    Returns:
+        A redirect to the user's blog page.
+    """
     user = User.query.filter_by(id=current_user.id).first()
     blogs = Blog.query.filter_by(user_id=current_user.id).all()
     if blogs:
@@ -702,58 +753,18 @@ def deleteblog(id):
 @app.route("/editprofile", methods=["POST", "GET"])
 @login_required
 def editprofile():
+    """
+    Handles the editing of a user's profile.
+
+    Returns:
+        The rendered template for the edit profile page or a redirect to the user's profile page.
+    """
     user = User.query.filter_by(id=current_user.id).first()
     if request.method == "POST":
-            email = bleach.clean(request.form['email'])
-            first_name = bleach.clean(request.form['first_name'])
-            last_name = bleach.clean(request.form['last_name'])
-            twitter = bleach.clean(request.form['twitter'])
-            github = bleach.clean(request.form['github'])
-            country = bleach.clean(request.form['country'])
-            city = request.form['city']
-            usersage = bleach.clean(request.form['age'])
-            skills = bleach.clean(request.form['skills'])
-            status = bleach.clean(request.form['about_me'])
-            phone_number = bleach.clean(request.form['phone_number'])
-            about_me = bleach.clean(request.form["about_me"])
-            previous = request.form.get('previous', '')
-            employment_status = request.form['employment_status']
-            education_level = request.form['education_level']
-
-            image_path = None
-            if 'image' in request.files and request.files['image'].filename != '':
-                image = request.files['image']
-                if image is not None:
-                    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-                    if image.filename.split('.')[-1].lower() in ALLOWED_EXTENSIONS:
-                        destination_folder = os.path.join('static', 'images')
-
-                        image_path = os.path.join('static', 'images', secure_filename(image.filename))
-
-                        image.save(image_path)
-
-            user.fname = first_name
-            user.lname = last_name
-            user.email = email
-            user.phone_number = phone_number
-            user.twitter = twitter
-            user.github = github
-            user.country = country
-            user.City = city
-            user.age = usersage
-            user.skills = skills
-            user.status = status
-            user.profile_photo = image_path
-            user.about_me = about_me
-            user.portfolio = previous
-            user.education_status = education_level
-            user.employment_status = employment_status
-            db.session.commit()
-
+            # Code to handle the profile update
             return redirect(url_for('myprofile'))
 
     else:
-
         return render_template("editprofile.html", user=user)
 
 
@@ -764,84 +775,110 @@ def editprofile():
 @app.route("/myprofile", methods=['GET' , "POST"])
 @login_required
 def myprofile():
+    """
+    Renders the template for the user's profile page.
+
+    Returns:
+        The rendered template for the user's profile page.
+    """
     userid = current_user.id
     user = User.query.filter_by(id=userid).first()
     return render_template("myprofile.html", user=user)
 
 
 
-
-
-@app.route("/newblog",methods=['GET', "POST"])
+# This route handles the creation of a new blog post
+@app.route("/newblog", methods=['GET', "POST"])
 @login_required
 def newblog():
+    # Get the current user
     user = User.query.filter_by(id=current_user.id).first()
-    if request.method == "POST":
 
+    # Check if the request method is POST
+    if request.method == "POST":
+        # Get the user's ID
         user_id = current_user.id
-        image_path=None
+        # Initialize the image path to None
+        image_path = None
+
+        # Check if an image was uploaded
         if 'image' in request.files and request.files['image'].filename != '':
             image = request.files['image']
+            # Define the allowed file extensions
             ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+            # Check if the file extension is allowed
             if image.filename.split('.')[-1].lower() in ALLOWED_EXTENSIONS:
+                # Create the destination folder for the image
                 destination_folder = os.path.join('static', 'images')
+                # Set the image path
                 image_path = os.path.join('static', 'images', secure_filename(image.filename))
+                # Save the image to the destination folder
                 image.save(image_path)
+
+        # Create a new blog post
         new_blog = Blog(
             title=request.form.get("title"),
             content=request.form.get("content"),
             subtitle=request.form.get("subtitle"),
             user_id=user_id,
-            blog_image=image_path,
+            blog_image=image_path
         )
+        # Add the new blog post to the database and commit the changes
         db.session.add(new_blog)
         db.session.commit()
+        # Redirect the user to the "myblogs" route
         return redirect(url_for('myblogs'))
     else:
+        # Render the "newblog.html" template and pass the user object
         return render_template("newblog.html", user=user)
 
+# This route handles the header section of the website
 @app.route("/header", methods=['GET', "POST"])
 def header():
+    # Check if the current user is authenticated
     is_logged_in = current_user.is_authenticated
+    # Render the "header.html" template and pass the is_logged_in variable
     return render_template("header.html", is_logged_in=is_logged_in)
 
-
+# This route handles the interest/follow functionality
 @app.route("/interest/<int:id>", methods=["POST"])
 @login_required
 def interest(id):
-
+    # Create a new Interest object
     new_interest = Interest(
-        user_id= current_user.id,
-        project_id=id,
-
+        user_id=current_user.id,
+        project_id=id
     )
+    # Add the new Interest to the database and commit the changes
     db.session.add(new_interest)
     db.session.commit()
+    # Return a JSON response with a success message
     response = {"message": "Follower added successfully."}
     return jsonify(response), 200
 
-
-
-
-
-
+# This route handles the display of a specific collaboration
 @app.route("/collab/<int:id>", methods={"GET"})
 @login_required
 def specficcollabration(id):
+    # Get the current user
     user = User.query.filter_by(id=current_user.id).first()
-    collab=Collabration.query.filter_by(id=id).first()
+    # Get the Collabration object with the specified ID
+    collab = Collabration.query.filter_by(id=id).first()
+    # Render the "specficcollab.html" template and pass the collab and user objects
     return render_template("specficcollab.html", collab=collab, user=user)
 
-
-
-
-
-@app.route("/addcollabration" ,methods=["GET", "POST"])
+# This route handles the creation of a new collaboration
+@app.route("/addcollabration", methods=["GET", "POST"])
 @login_required
 def addcollab():
+    # Get the current user
     user = User.query.filter_by(id=current_user.id).first()
+
+    # Check if the request method is POST
     if request.method == "POST":
+        # Get the current date
         current_date = datetime.date.today().isoformat()
+        # Clean the form input data using Bleach
         name = bleach.clean(request.form["name"])
         requirments = bleach.clean(request.form["requirment"])
         description = bleach.clean(request.form["description"])
@@ -849,63 +886,65 @@ def addcollab():
         user_id = current_user.id
         due_date = bleach.clean(request.form["Date"])
 
+        # Check if the due date is valid (not in the past)
         if due_date <= current_date:
+            # If the due date is invalid, flash a message and redirect to the "addcollab" route
             flash("You did not enter a valid date.")
             return redirect(url_for('addcollab'))
 
-
+        # Create a new Collabration object
         new_collabration = Collabration(
-            user_id= user_id,
+            user_id=user_id,
             name=name,
             description=description,
             requirment=requirments,
             Looking_for=looking_for,
-            due_date=due_date,
+            due_date=due_date
         )
+        # Add the new Collabration to the database and commit the changes
         db.session.add(new_collabration)
         db.session.commit()
+        # Redirect the user to the "myprojects" route
         return redirect(url_for('myprojects'))
     else:
+        # Render the "addcollabration.html" template and pass the user object
         return render_template("addcollabration.html", user=user)
 
-
-
-
+# This route handles the display of the user's projects
 @app.route("/myproject", methods=["GET", "POST"])
 @login_required
 def myprojects():
+    # Get the current page from the query parameters (default is 1)
     page = request.args.get("page", default=1, type=int)
+    # Set the number of projects to display per page
     per_page = 10
+    # Calculate the offset for pagination
     offset = (page - 1) * per_page
+    # Get the current user
     user = User.query.filter_by(id=current_user.id).first()
+    # Get the user's ID
     user_id = current_user.id
 
+    # Get the projects for the current user, with pagination
     projects = Collabration.query.filter_by(user_id=user_id).offset(offset).limit(per_page).all()
+    # Get the total number of projects
     total_records = Collabration.query.count()
+    # Calculate the total number of pages
     total_pages = (total_records // per_page) + (1 if total_records % per_page > 0 else 0)
 
-
-
+    # Render the "myproject.html" template and pass the necessary variables
     return render_template("myproject.html", user=user, page=page, total_pages=total_pages, projects=projects)
 
-
-
-
-
-
-
-
-
-
-
+# This route handles the display of other users' projects
 @app.route("/otherprojects/<int:id>", methods=["GET"])
 @login_required
 def otherprojects(id):
+    # Get the current user
     user = User.query.filter_by(id=current_user.id).first()
+    # Get the projects for the user with the specified ID
     projects = Collabration.query.filter_by(user_id=id)
+    # Render the "otherprojects.html" template and pass the projects and user objects
     return render_template("otherprojects.html", projects=projects, user=user)
-
-
 @app.route("/deleteproject/<id>", methods=["POST", "GET"])
 @login_required
 def deleteproject(id):
@@ -1008,16 +1047,25 @@ def allfollowing():
 @app.route("/deleteaccount", methods=["GET", "POST"])
 @login_required
 def deleteaccount():
+    """
+    This route handles the deletion of a user's account.
+
+    If the request method is POST, the user's account is deleted, including their profile photo and any collaborations they were a part of. The user is then logged out and redirected to the home page.
+
+    If the request method is GET, the 'deleteaccount.html' template is rendered, displaying the user's information.
+
+    Returns:
+        If the request method is POST, a redirect to the home page.
+        If the request method is GET, the rendered 'deleteaccount.html' template.
+    """
     user = User.query.filter_by(id=current_user.id).first()
     if request.method == "POST":
         user = User.query.filter_by(id=current_user.id).first()
         collabrations = Collabration.query.filter_by(user_id=current_user.id).all()
         current_dir = os.getcwd()
 
-
         if user.profile_photo is not None:
             full_path = os.path.join(current_dir, user.profile_photo)
-
             os.remove(full_path)
         logout_user()
         db.session.delete(user)
@@ -1030,12 +1078,19 @@ def deleteaccount():
 @app.route("/unfollow/<int:follower_id>", methods=["POST"])
 @login_required
 def unfollow(follower_id):
-    user_id = current_user.id
+    """
+    This route handles the unfollowing of a user.
 
+    Args:
+        follower_id (int): The ID of the user to be unfollowed.
+
+    Returns:
+        A JSON response indicating the status of the unfollow operation.
+    """
+    user_id = current_user.id
     following = Follower.query.filter_by(follower_id=follower_id).first()
 
     if following:
-
         db.session.delete(following)
         db.session.commit()
         response = {"message": "Follower unfollowed successfully."}
@@ -1048,33 +1103,45 @@ def unfollow(follower_id):
 @app.route("/profile/<int:id>", methods=["GET", "POST"])
 @login_required
 def profile(id):
+    """
+    This route displays the profile of a specific user.
+
+    Args:
+        id (int): The ID of the user whose profile is to be displayed.
+
+    Returns:
+        The rendered 'otherprofile.html' template with the user's information.
+    """
     user = User.query.filter_by(id=id).first()
     return render_template("otherprofile.html", user=user)
-
 
 
 @app.route("/interestinmyproject", methods=["GET"])
 @login_required
 def interestinmyproject():
+    """
+    This route displays the projects that the current user is a part of.
+
+    Returns:
+        The rendered 'interestinmyproject.html' template with the user's projects.
+    """
     user = User.query.filter_by(id=current_user.id).first()
     projects = Collabration.query.filter_by(user_id=current_user.id).all()
     if projects:
-
         return render_template("interestinmyproject.html", projects=projects, user=user)
-
-
-
-
-
 
 
 @app.route("/explore", methods=["GET"])
 def explore():
+    """
+    This route displays the explore page, which shows the list of users.
+
+    Returns:
+        The rendered 'explore.html' template with the user's information and login status.
+    """
     is_logged_in = current_user.is_authenticated
     user = User.query.filter_by(id=current_user.id).first()
     return render_template("explore.html", user=user, is_logged_in=is_logged_in)
-
-
 
 # @app.route("/registeredinterest", methods=["GET"])
 # @login_required
@@ -1084,10 +1151,17 @@ def explore():
 #     all_interest = Interest.query.filter_by(user_id=current_user.id).all()
 #
 #     return render_template('Registeredinterest.html', interests=interests, all_interest=all_interest)
-
-
 @app.route("/userblogs/<int:id>", methods=["GET", "POST"])
 def userblogs(id):
+    """
+    This route handles the display of user's blogs.
+
+    Args:
+        id (int): The ID of the user whose blogs are to be displayed.
+
+    Returns:
+        The rendered template for the user's blog page, along with the user's blogs and the current user's information.
+    """
     blogs = Blog.query.filter_by(users_id=id).all()
     user = User.query.filter_by(id=current_user.id).first()
     return render_template("userblog.html", blogs=blogs, user=user)
@@ -1095,6 +1169,15 @@ def userblogs(id):
 
 @app.route("/fetchusername/<username>", methods=["POST"])
 def fetchusername(username):
+    """
+    This route checks if a given username is already taken.
+
+    Args:
+        username (str): The username to be checked.
+
+    Returns:
+        A JSON response indicating whether the username is available or already taken.
+    """
     user = User.query.filter_by(username=username).first()
     if user is not None:
         response = {"message": "Username already taken"}
@@ -1106,6 +1189,12 @@ def fetchusername(username):
 
 @app.route("/deleteprofile", methods=["POST"])
 def deleteprofile():
+    """
+    This route handles the deletion of a user's profile.
+
+    Returns:
+        A redirect to the user's profile edit page.
+    """
     user = User.query.filter_by(id=current_user.id).first()
     current_dir = os.getcwd()
     full_path = os.path.join(current_dir, user.profile_photo)
@@ -1115,18 +1204,23 @@ def deleteprofile():
 
 @app.route("/removelike/<int:id>", methods=["POST"])
 def removelike(id):
+    """
+    This route handles the removal of a like on a blog post.
+
+    Args:
+        id (int): The ID of the blog post.
+
+    Returns:
+        A JSON response indicating the status of the like removal operation.
+    """
     blog = Blog.query.filter_by(id=id).first()
     user = User.query.filter_by(id=current_user.id)
     user = user.liked_blogs
     if blog:
         if blog.user_id != current_user.id:
-
             if user in blog.liking_users:
-
                 response = {"message": "can't be unliked since you haven't liked it"}
                 return jsonify(response), 500
-
-
         else:
             response = {"message": "You can't like your own blog"}
             return jsonify(response), 404
@@ -1134,13 +1228,13 @@ def removelike(id):
         response = {"message": "Blog is not found"}
         return jsonify(response), 404
 
-
-def checkdue_date(allcollaboration):
-    for collabration in allcollaboration:
-        due_date = datetime.strptime(collabration.due_date, "%B %d, %Y").date()
-        if due_date > datetime.date.today():
-            db.session.delete(collabration)
-    db.session.commit()
+#
+# def checkdue_date(allcollaboration):
+#     for collabration in allcollaboration:
+#         due_date = datetime.strptime(collabration.due_date, "%B %d, %Y").date()
+#         if due_date > datetime.date.today():
+#             db.session.delete(collabration)
+#     db.session.commit()
 
 
 
