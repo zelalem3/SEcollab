@@ -22,21 +22,21 @@ SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 PERMANENT_SESSION_LIFETIME = timedelta(seconds=28800)
 
-
 @app.route("/addoremovelike/<int:id>", methods=["POST"])
 @login_required
 def addoremovelike(id):
-    #get the current user
+    # Get the current user's ID
     user_id = current_user.id
     try:
-        #query all the specifblog to liked or remove like
+        # Query the specific blog to be liked or have its like removed
         blog = Blog.query.filter_by(id=id).first()
-        #check if the current user have already liked that blog
+        # Check if the current user has already liked that blog
         liked_blog = LikedBlog.query.filter_by(user_id=current_user.id, blog_id=id).first()
-        #check if the blogs exist
+        # Check if the blog exists
         if blog:
-            #check if the current user is not the owner of the blog
+            # Check if the current user is not the owner of the blog
             if blog.user_id != user_id:
+<<<<<<< HEAD
                     #check if not the user has already liked that post
                 if liked_blog:
                     db.session.delete(liked_blog)
@@ -59,68 +59,106 @@ def addoremovelike(id):
                     return jsonify(response), 200
 
 
+=======
+                # Check if the user has not already liked the post
+                if current_user not in blog.liking_users:
+                    # Add a like
+                    blog.like += 1
+                    # Add the user to the list of users who have liked the post
+                    blog.liking_users.append(current_user)
+                    # Commit the changes to the database
+                    db.session.commit()
+                    response = {"message": "like added"}
+                    return jsonify(response), 200
+                else:
+                    # If the user has already liked the post, remove the user from the liked_blogs
+                    db.session.delete(liked_blog)
+                    # Subtract the like of the user
+                    blog.like -= 1
+                    # Commit changes to the database
+                    db.session.commit()
+                    response = {"message": "Like Removed"}
+                    return jsonify(response), 200
+>>>>>>> d587a7d48c61f6122b7e9802bbc1e8c1ef8bdb59
             else:
-                #if the owner of the blogs is the same as the user who is trying to like the post return a 403 response to js
+                # If the owner of the blog is the same as the user who is trying to like the post, return a 403 response to JS
                 response = {"message": "You can't like your own blog"}
                 return jsonify(response), 403
         else:
-            #if the blog doesn;t exit return a 404 response
+            # If the blog doesn't exist, return a 404 response
             response = {"message": "Blog is not found"}
             return jsonify(response), 404
     except Exception as e:
+        # If an exception occurs, return a 500 response with the error message
         response = {"message": f"Internal server error: {str(e)}"}
         print(e)  # Print the exception for debugging purposes
         return jsonify(response), 500
 
-
 @app.route("/topblogs", methods=["GET"])
 def TopBlogs():
-    #query the current user
+    # Query the current user
     user = User.query.filter_by(id=current_user.id).first()
-    #adding pagination
+
+    # Implement pagination
     page = request.args.get("page", default=1, type=int)
     per_page = 10
     offset = (page - 1) * per_page
-    #query 30 top liked blogs
-    blogs = Blog.query.filter(Blog.user_id != current_user.id).order_by(Blog.like.desc()).offset(offset).limit(per_page).all()
 
+    # Query the 30 top liked blogs, excluding the current user's blogs
+    blogs = Blog.query.filter(Blog.user_id != current_user.id) \
+                      .order_by(Blog.like.desc()) \
+                      .offset(offset) \
+                      .limit(per_page) \
+                      .all()
 
+    # Set the total number of pages (hardcoded to 3 for now)
     total_pages = 3
 
+    # Render the 'topblogs.html' template with the required data
     return render_template("topblogs.html", blogs=blogs, page=page, user=user, total_pages=total_pages)
-
-
 
 @app.route("/accept/<int:id>/<int:userid>", methods=["POST"])
 @login_required
 def accept(id, userid):
-    #query the project
+    # Query the project using the provided id
     project = Collabration.query.get(id)
-    #if the project exist
+
+    # Check if the project exists
     if project:
+        # Check if the current user is the project owner
         if current_user.id == project.user_id:
+            # Query the user using the provided user id
             user = User.query.get(userid)
+
+            # Check if the user exists
             if user:
-                #add th user to the team
+                # Add the user to the project's team
                 project.members.append(user)
-                #query the interest of that user
+
+                # Query the user's interest
                 interest = Interest.query.filter_by(user_id=userid).first()
-                #remove the user since they are on the team
+
+                # Remove the user's interest since they are now on the team
                 db.session.delete(interest)
-                #comomit the changes to the database
+
+                # Commit the changes to the database
                 db.session.commit()
+
+                # Return a success response
                 response = {"message": "User added to the team successfully"}
                 return jsonify(response), 200
             else:
+                # Return a 404 error response if the user is not found
                 response = {"message": "User not found"}
                 return jsonify(response), 404
         else:
+            # Return a 403 error response if the current user is not the project owner
             response = {"message": "Current user is not the project owner"}
             return jsonify(response), 403
     else:
+        # Return a 404 error response if the project is not found
         response = {"message": "Project not found"}
         return jsonify(response), 404
-
 
 @app.route("/follow/<int:id>", methods=["POST"])
 @login_required
