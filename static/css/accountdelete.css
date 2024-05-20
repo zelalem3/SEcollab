@@ -23,3 +23,7 @@
         p {
             color: #777;
         }
+        body.dark-mode,
+    body.dark-mode .container{
+    background-color: black;
+    }

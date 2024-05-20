@@ -1,0 +1,8 @@
+body.dark-mode{
+    background-color: black;
+    color:white;
+    }
+    body.dark-mode input,
+    body.dark-mode input.hover{
+    background-color: black;
+    }

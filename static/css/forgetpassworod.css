@@ -14,6 +14,9 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             text-align: center;
         }
+        body.dark-mode form{
+        box-shadow: 0 2px 5px rgba(0,0,0,4);
+        }
         button {
             background-color: #007bff;
             color: white;

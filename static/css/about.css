@@ -299,3 +299,90 @@ img{
       margin-bottom: 10px;
 
     }
+    		body.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+body.dark-mode .navbar,
+body.dark-mode .breadcrumb,
+body.dark-mode .footer,
+body.dark-mode .footer-bottom {
+  background-color: #1e1e1e;
+}
+
+body.dark-mode .navbar a,
+body.dark-mode .breadcrumb a,
+body.dark-mode .footer a,
+body.dark-mode .footer-bottom a {
+  color: #bb86fc;
+}
+
+body.dark-mode .card,
+body.dark-mode .team-box .team-content,
+body.dark-mode .footer-one,
+body.dark-mode .footer-two,
+body.dark-mode .footer-three,
+body.dark-mode .footer-four {
+  background-color: #2c2c2c;
+  color: #e0e0e0;
+}
+
+body.dark-mode input.form-control,
+body.dark-mode textarea.form-control {
+  background-color: #333333;
+  color: #e0e0e0;
+  border: 1px solid #444444;
+}
+
+body.dark-mode button.btn {
+  background-color: #bb86fc;
+  color: #121212;
+  border: none;
+}
+
+body.dark-mode button.btn:hover {
+  background-color: #9a67ea;
+}
+body.dark-mode h1{
+color: white;
+}
+
+body.dark-mode .social-icons a {
+  color: #bb86fc;
+}
+
+body.dark-mode .social-icons a:hover {
+  color: #9a67ea;
+}
+
+body.dark-mode .border,
+body.dark-mode .border-team {
+  border-color: #bb86fc;
+}
+
+
+
+
+body.dark-mode .bread-bar {
+  background-color: #1e1e1e;
+  color: #bb86fc;
+}
+
+body.dark-mode .breadcrumb {
+  background-color: #1e1e1e;
+  color: #bb86fc;
+}
+
+body.dark-mode .breadcrumb a {
+  color: #bb86fc;
+}
+
+body.dark-mode .breadcrumb .active {
+  color: #e0e0e0;
+}
+
+body.dark-mode .team-content h3,
+body.dark-mode .footer h5 {
+  color: #bb86fc;
+}

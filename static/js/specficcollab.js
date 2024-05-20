@@ -15,6 +15,11 @@ if(register.textContent == "Register Interest")
     })
       .then(function(response) {
         if (response.ok) {
+
+          if (response.status == 400)
+          {
+            register.textContent = "Registered";
+          }
           register.textContent = "Registered";
           return response.json();
         } else {

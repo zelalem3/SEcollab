@@ -47,3 +47,63 @@ body {
     input[type="submit"]:hover {
       background-color: #45a049;
     }
+     body.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+body.dark-mode .navbar,
+body.dark-mode .sidebar {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+body.dark-mode .navbar a,
+body.dark-mode .sidebar a {
+  color: #bb86fc;
+}
+
+body.dark-mode .container {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+  color: #bb86fc;
+}
+
+body.dark-mode label {
+  color: #bb86fc;
+}
+
+body.dark-mode input[type="text"],
+body.dark-mode textarea {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  border: 1px solid #bb86fc;
+  border-radius: 4px;
+  padding: 10px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+body.dark-mode input[type="submit"] {
+  background-color: #bb86fc;
+  color: #121212;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+body.dark-mode input[type="submit"]:hover {
+  background-color: #9a67ea;
+}

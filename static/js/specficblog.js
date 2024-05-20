@@ -14,21 +14,27 @@ like.addEventListener("click", function() {
         },
     })
     .then(function(response) {
-        if (response.ok) {
-            if(isClicked) {
-                blog_like -= 1;
-                icon.style.color= "black";
-                isClicked = false;
-            } else {
-                blog_like += 1;
-                icon.style.color= "blue";
-                isClicked = true;
-            }
-            numlike.textContent = blog_like; // Update numlike text content
-            return response.json();
-        } else {
-            throw new Error("Error: " + response.status);
-        }
+
+     if (response.ok) {
+    if (response.status == 201) {
+
+            blog_like -= 1;
+            icon.style.color = "black";
+            isClicked = false;
+
+    } else if (response.status == 200) {
+
+            blog_like += 1;
+            icon.style.color = "blue";
+            isClicked = true;
+
+    }
+    numlike.textContent = blog_like;
+    return response.json();
+} else {
+    throw new Error("Error: " + response.status);
+}
+
     })
     .then(function(data) {
         if (data && data.message) {

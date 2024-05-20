@@ -38,25 +38,26 @@ def addoremovelike(id):
             #check if the current user is not the owner of the blog
             if blog.user_id != user_id:
                     #check if not the user has already liked that post
-                if current_user not in blog.liking_users:
-                    #add like
+                if liked_blog:
+                    db.session.delete(liked_blog)
+                    # subtract the like of the user
+                    blog.like -= 1
+                    # commit changes to the database
+                    db.session.commit()
+                    response = {"message": "Like Removed"}
+                    return jsonify(response), 201
+
+                else:
+                    #if the user has already liked tha post remove the user from the liked_blogs
+                    # add like
                     blog.like += 1
-                    #add the user to user who have already liked that post
+                    # add the user to user who have already liked that post
                     blog.liking_users.append(current_user)
-                    #commit the changes to the database
+                    # commit the changes to the database
                     db.session.commit()
                     response = {"message": "like added"}
                     return jsonify(response), 200
 
-                else:
-                    #if the user has already liked tha post remove the user from the liked_blogs
-                    db.session.delete(liked_blog)
-                    #subtract the like of the user
-                    blog.like -= 1
-                    #commit changes to the database
-                    db.session.commit()
-                    response = {"message": "Like Removed"}
-                    return jsonify(response), 200
 
             else:
                 #if the owner of the blogs is the same as the user who is trying to like the post return a 403 response to js
@@ -347,11 +348,12 @@ def followingblogs():
         .limit(per_page)
         .all()
     )
+    total_pages = 0
     for blog in following_blogs:
-        print(blog.title)
-    total_records = Blog.query.filter(
+
+        total_records = Blog.query.filter(
         Blog.user_id.in_([following_user.id for following_user in following_users])).count()
-    total_pages = (total_records // per_page) + (1 if total_records % per_page > 0 else 0)
+        total_pages = (total_records // per_page) + (1 if total_records % per_page > 0 else 0)
 
     return render_template(
         "following_blogs.html", blogs=following_blogs, page=page, total_pages=total_pages, user=user
@@ -517,7 +519,7 @@ def signup():
         image_path = "static/images/noprofile.jpg"
 
         # If the user has uploaded an image
-        if 'image' in request.files and request.form['image'].filename != '':
+        if 'image' in request.files:
             image = request.files['image']
             ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
             # Check if the image file extension is allowed
@@ -636,6 +638,17 @@ def about():
 def logout():
     logout_user()
     return redirect(url_for("home"))
+@app.route("/removefollower/<int:id>", methods=["POST"])
+def removefollower(id):
+    follower = Follower.query.filter_by(user_id=current_user.id, follower_id=id).first()
+    if follower:
+        db.session.delete(follower)
+        db.session.commit()
+        response = {"follower removed succesfully"}
+        return response, 200
+    else:
+        response={"There is no follower with that id"}
+        return response, 404
 
 
 @app.route("/allblogs")
@@ -647,7 +660,7 @@ def allblogs():
     per_page = 10
     offset = (page - 1) * per_page
 
-    blogs = Blog.query.order_by(Blog.date.desc(), Blog.like.desc()).offset(offset).limit(per_page).all()
+    blogs = Blog.query.filter(Blog.user_id != current_user.id).order_by(Blog.date.desc(), Blog.like.desc()).offset(offset).limit(per_page).all()
 
     total_records = Blog.query.count()
 
@@ -655,7 +668,7 @@ def allblogs():
 
     return render_template("allblog.html", blogs=blogs, page=page, user=user,total_pages=total_pages)
 
-@app.route("/blogs/<id>")
+@app.route("/blogs/<id>", methods=["GET"])
 @login_required
 def Specficblog(id):
     """
@@ -844,6 +857,11 @@ def header():
 @app.route("/interest/<int:id>", methods=["POST"])
 @login_required
 def interest(id):
+    interest = Interest.query.filter_by(user_id=current_user.id, project_id=id).first()
+    if interest:
+        response = {"message": "Follower added successfully."}
+        return jsonify(response), 400
+
     # Create a new Interest object
     new_interest = Interest(
         user_id=current_user.id,
@@ -939,12 +957,23 @@ def myprojects():
 @app.route("/otherprojects/<int:id>", methods=["GET"])
 @login_required
 def otherprojects(id):
+    page = request.args.get("page", default=1, type=int)
+    # Set the number of projects to display per page
+    per_page = 10
+    # Calculate the offset for pagination
+    offset = (page - 1) * per_page
+
     # Get the current user
     user = User.query.filter_by(id=current_user.id).first()
     # Get the projects for the user with the specified ID
-    projects = Collabration.query.filter_by(user_id=id)
+    projects = Collabration.query.filter_by(user_id=id).offset(offset).limit(per_page).all()
+
+    total_records = Collabration.query.count()
+    # Calculate the total number of pages
+    total_pages = (total_records // per_page) + (1 if total_records % per_page > 0 else 0)
+
     # Render the "otherprojects.html" template and pass the projects and user objects
-    return render_template("otherprojects.html", projects=projects, user=user)
+    return render_template("otherprojects.html", projects=projects, user=user,page=page, total_pages=total_pages)
 @app.route("/deleteproject/<id>", methods=["POST", "GET"])
 @login_required
 def deleteproject(id):
@@ -965,8 +994,8 @@ def deleteproject(id):
 @login_required
 def searchproject(namepattern):
     user = User.query.filter_by(id=current_user.id).first()
-    results = Collabration.query.filter(Collabration.name.like(f'%{namepattern}%'), User.id != current_user.id).all()
-    return render_template("searchprofile.html", results=results, pattern=namepattern, user=user)
+    results = Collabration.query.filter(Collabration.name.like(f'%{namepattern}%'), User.id != current_user.id).first()
+    return render_template("searchprofile.html", result=results, pattern=namepattern, user=user)
 
 
 
@@ -983,8 +1012,17 @@ def searchprofile(namepattern):
 @login_required
 def searchblog(titleofblog):
     user = User.query.filter_by(id=current_user.id).first()
-    results = Blog.query.filter(Blog.title.like(f'%{titleofblog}%')).all()
-    return render_template("searchblog.html", results=results, titleofblog=titleofblog, user=user)
+    page = request.args.get("page", default=1, type=int)
+    per_page = 10
+    offset = (page - 1) * per_page
+    user = User.query.filter_by(id=current_user.id).first()
+    results = Blog.query.filter(Blog.title.like(f'%{titleofblog}%')).offset(offset).limit(per_page).all()
+
+    total_records = Blog.query.count()
+
+    total_pages = (total_records // per_page) + (1 if total_records % per_page > 0 else 0)
+
+    return render_template("searchblog.html", results=results, titleofblog=titleofblog, page=page, total_pages=total_pages,user=user)
 
 
 
@@ -1162,7 +1200,7 @@ def userblogs(id):
     Returns:
         The rendered template for the user's blog page, along with the user's blogs and the current user's information.
     """
-    blogs = Blog.query.filter_by(users_id=id).all()
+    blogs = Blog.query.filter_by(user_id=id).all()
     user = User.query.filter_by(id=current_user.id).first()
     return render_template("userblog.html", blogs=blogs, user=user)
 
@@ -1235,6 +1273,24 @@ def removelike(id):
 #         if due_date > datetime.date.today():
 #             db.session.delete(collabration)
 #     db.session.commit()
+
+@app.route("/followingprojects", methods=["GET"])
+def followingprojects():
+    page = request.args.get("page", default=1, type=int)
+    per_page = 10
+    offset = (page - 1) * per_page
+    user = User.query.get(current_user.id)
+    following_users = [follower.followed_user for follower in user.following]
+
+    # query all the user the current user follows
+    following_projects = Collabration.query.filter(Collabration.user_id.in_([following_user.id for following_user in following_users])).offset(offset).limit(per_page).all()
+
+    # fget the count of the query
+    total_records = User.query.count()
+
+    total_pages = (total_records // per_page) + (1 if total_records % per_page > 0 else 0)
+
+    return render_template("FollowingProjects.html", user=user, page=page, total_pages=total_pages, projects=following_projects)
 
 
 
